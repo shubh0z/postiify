@@ -65,7 +65,7 @@ const PRODUCTS = [
     type: "figure",
     inStock: true,
     emoji: "🔴",
-    imgs: ["F:/poster&anime_website/images/Akaza.jpeg","F:/poster&anime_website/images/Goku.jpeg"]
+    imgs: ["anime_figures/Akaza.jpeg","anime_figures/Goku.jpeg"]
   },
   {
     id: 7,
