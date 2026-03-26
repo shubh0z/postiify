@@ -471,7 +471,7 @@ function orderOnInstagram() {
     itemsList +
     "\n\n──────────────────\n" +
     "Items: " + totalQty + "  |  Total: ₹" + total +
-    "\n\nPlease confirm availability! 🙏";
+    "";
 
   // Copy to clipboard so user can paste in DM
   var copied = false;
