@@ -107,8 +107,9 @@ const IG_DM_URL = "https://www.instagram.com/direct/t/18063073595391388/";
 // ============================================================
 //  STATE
 // ============================================================
-let cart = [];
+let cart = []; // Each item: { id, name, series, price, type, inStock, emoji, imgs, qty }
 let currentFilter = "all";
+let currentSearch = "";
 let holdTimer = null;
 const HOLD_MS = 500;
 let lbImgs = [];
@@ -119,10 +120,24 @@ let lbProductId = null;
 // ============================================================
 //  RENDER PRODUCTS
 // ============================================================
-function renderProducts(filter) {
-  filter = filter || "all";
+function renderProducts(filter, search) {
+  filter = filter || currentFilter || "all";
+  search = (search !== undefined ? search : currentSearch).trim().toLowerCase();
+
   var grid = document.getElementById("productGrid");
-  var filtered = filter === "all" ? PRODUCTS : PRODUCTS.filter(function(p) { return p.type === filter; });
+  var filtered = PRODUCTS.filter(function(p) {
+    var typeMatch = filter === "all" || p.type === filter;
+    var searchMatch = !search ||
+      p.name.toLowerCase().includes(search) ||
+      p.series.toLowerCase().includes(search) ||
+      p.type.toLowerCase().includes(search);
+    return typeMatch && searchMatch;
+  });
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="no-results">No results for "<span>' + (search || filter) + '</span>" 😔</div>';
+    return;
+  }
 
   grid.innerHTML = filtered.map(function(p) {
     var hasImgs = p.imgs && p.imgs.length > 0;
@@ -304,7 +319,26 @@ function filterProducts(type, el) {
   currentFilter = type;
   document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
   el.classList.add("active");
-  renderProducts(type);
+  renderProducts(type, currentSearch);
+}
+
+// ============================================================
+//  SEARCH
+// ============================================================
+function onSearchInput(val) {
+  currentSearch = val;
+  var clearBtn = document.getElementById("searchClear");
+  if (clearBtn) clearBtn.style.display = val ? "flex" : "none";
+  renderProducts(currentFilter, val);
+}
+
+function clearSearch() {
+  currentSearch = "";
+  var input = document.getElementById("searchInput");
+  if (input) input.value = "";
+  var clearBtn = document.getElementById("searchClear");
+  if (clearBtn) clearBtn.style.display = "none";
+  renderProducts(currentFilter, "");
 }
 
 // ============================================================
@@ -314,7 +348,12 @@ function addToCart(id) {
   var product = PRODUCTS.find(function(p) { return p.id === id; });
   if (!product || !product.inStock) return;
 
-  cart.push(Object.assign({}, product, { cartId: Date.now() + Math.random() }));
+  var existing = cart.find(function(item) { return item.id === id; });
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push(Object.assign({}, product, { qty: 1 }));
+  }
   updateCartUI();
   updateCartCount();
 
@@ -345,8 +384,19 @@ function addToCart(id) {
 // ============================================================
 //  REMOVE FROM CART
 // ============================================================
-function removeFromCart(cartId) {
-  cart = cart.filter(function(item) { return item.cartId !== cartId; });
+function removeFromCart(id) {
+  cart = cart.filter(function(item) { return item.id !== id; });
+  updateCartUI();
+  updateCartCount();
+}
+
+function changeQty(id, delta) {
+  var item = cart.find(function(i) { return i.id === id; });
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) {
+    cart = cart.filter(function(i) { return i.id !== id; });
+  }
   updateCartUI();
   updateCartCount();
 }
@@ -369,17 +419,25 @@ function updateCartUI() {
       '<div class="cart-item-name">' + item.name +
         '<br><span style="color:var(--text-dim);font-size:11px">' + item.series + '</span>' +
       '</div>' +
-      '<div class="cart-item-price">₹' + item.price + '</div>' +
-      '<button class="cart-item-remove" onclick="removeFromCart(' + item.cartId + ')" title="Remove">✕</button>' +
+      '<div class="cart-item-right">' +
+        '<div class="qty-controls">' +
+          '<button class="qty-btn" onclick="changeQty(' + item.id + ', -1)" title="Remove one">−</button>' +
+          '<span class="qty-value">' + item.qty + '</span>' +
+          '<button class="qty-btn" onclick="changeQty(' + item.id + ', 1)" title="Add one">+</button>' +
+        '</div>' +
+        '<div class="cart-item-price">₹' + (item.price * item.qty) + '</div>' +
+        '<button class="cart-item-remove" onclick="removeFromCart(' + item.id + ')" title="Remove">✕</button>' +
+      '</div>' +
     '</div>';
   }).join("");
 
-  var total = cart.reduce(function(sum, item) { return sum + item.price; }, 0);
+  var total = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
   totalEl.textContent = "₹" + total;
 }
 
 function updateCartCount() {
-  document.getElementById("cartCount").textContent = cart.length;
+  var total = cart.reduce(function(sum, item) { return sum + item.qty; }, 0);
+  document.getElementById("cartCount").textContent = total;
 }
 
 // ============================================================
@@ -400,12 +458,100 @@ function orderOnInstagram() {
   if (cart.length === 0) { showToast("Cart is empty!"); return; }
 
   var itemsList = cart.map(function(item, i) {
-    return (i + 1) + ". " + item.name + " (" + item.series + ") — ₹" + item.price;
+    var line = (i + 1) + ". " + item.name + " (" + item.series + ")";
+    if (item.qty > 1) line += " × " + item.qty;
+    line += " — ₹" + (item.price * item.qty);
+    return line;
   }).join("\n");
-  var total = cart.reduce(function(sum, item) { return sum + item.price; }, 0);
-  var message = "🛒 Order from postiiify website!\n\n" + itemsList + "\n\nTotal: ₹" + total + "\n\nPlease confirm availability!";
 
-  if (navigator.clipboard) { navigator.clipboard.writeText(message).catch(function() {}); }
+  var totalQty = cart.reduce(function(s, i) { return s + i.qty; }, 0);
+  var total = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
+
+  var message = "🛒 Order from postiiify website!\n\n" +
+    itemsList +
+    "\n\n──────────────────\n" +
+    "Items: " + totalQty + "  |  Total: ₹" + total +
+    "\n\nPlease confirm availability! 🙏";
+
+  // Copy to clipboard so user can paste in DM
+  var copied = false;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(message).then(function() {
+      copied = true;
+    }).catch(function() {});
+  }
+
+  // Also store in sessionStorage as fallback
+  try { sessionStorage.setItem("postiify_order", message); } catch(e) {}
+
+  // Show the message in a popup before opening Instagram
+  showOrderPreview(message);
+}
+
+// ============================================================
+//  ORDER PREVIEW POPUP
+// ============================================================
+function showOrderPreview(message) {
+  // Remove existing popup if any
+  var existing = document.getElementById("orderPreview");
+  if (existing) existing.remove();
+
+  var popup = document.createElement("div");
+  popup.id = "orderPreview";
+  popup.className = "order-preview-overlay";
+  popup.innerHTML = [
+    '<div class="order-preview-modal">',
+      '<div class="order-preview-header">',
+        '<span>📋 YOUR ORDER MESSAGE</span>',
+        '<button onclick="closeOrderPreview()">✕</button>',
+      '</div>',
+      '<div class="order-preview-body">',
+        '<p class="order-preview-hint">Copy this message, then paste it in the Instagram DM:</p>',
+        '<pre class="order-preview-text" id="orderMsgText">' + message.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</pre>',
+      '</div>',
+      '<div class="order-preview-footer">',
+        '<button class="order-copy-btn" onclick="copyOrderMsg()">📋 COPY MESSAGE</button>',
+        '<button class="order-ig-btn" onclick="openInstagram()">📩 OPEN INSTAGRAM DM</button>',
+      '</div>',
+    '</div>'
+  ].join("");
+
+  document.body.appendChild(popup);
+  setTimeout(function() { popup.classList.add("open"); }, 10);
+}
+
+function closeOrderPreview() {
+  var popup = document.getElementById("orderPreview");
+  if (popup) {
+    popup.classList.remove("open");
+    setTimeout(function() { popup.remove(); }, 300);
+  }
+}
+
+function copyOrderMsg() {
+  var el = document.getElementById("orderMsgText");
+  var text = el ? el.textContent : "";
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast("✓ Message copied!");
+    }).catch(function() { fallbackCopy(text); });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); showToast("✓ Message copied!"); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function openInstagram() {
   window.open(IG_DM_URL, "_blank");
   showToast("Opening Instagram DM! 📩");
 }
@@ -431,7 +577,7 @@ function showToast(msg) {
 //  INIT
 // ============================================================
 document.addEventListener("DOMContentLoaded", function() {
-  renderProducts("all");
+  renderProducts("all", "");
 });
 
 // Close lightbox when clicking overlay background
