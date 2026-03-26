@@ -35,6 +35,23 @@
     <button class="filter-btn" onclick="filterProducts('figure', this)">FIGURES</button>
   </div>
 
+  <!-- SEARCH BAR -->
+  <div class="search-bar-wrap">
+    <div class="search-inner">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search posters, figures, series..."
+        oninput="onSearchInput(this.value)"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none">✕</button>
+    </div>
+  </div>
+
   <!-- PRODUCTS GRID -->
   <main>
     <div class="grid" id="productGrid">
