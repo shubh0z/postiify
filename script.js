@@ -1,102 +1,20 @@
 // ============================================================
-//  postiiify – Anime Shop Script
+//  postiiify – Main Script
+//  Products are loaded from separate files:
+//    - products-posters.js   (anime / cars / singers)
+//    - products-figures.js
+//    - products-polaroids.js
+//    - products-frames.js
+//    - products-custom.js
 // ============================================================
 
-// ============================================================
-//  🛍️  YOUR PRODUCTS — Edit this section!
-//
-//  imgs: [] — array of image paths for this product
-//    - First image shows on the card
-//    - All images show in swipeable popup (hold/long-press card)
-//    - Example: imgs: ["images/poster1a.jpg", "images/poster1b.jpg"]
-//    - Leave as [] to use emoji placeholder
-// ============================================================
+// Merge all product arrays into one master list
 const PRODUCTS = [
-  {
-    id: 2,
-    name: "Monkey D. Luffy — Gear 5",
-    series: "One Piece",
-    price: 149,
-    type: "poster",
-    inStock: true,
-    emoji: "⚪",
-    imgs: [],
-  },
-  {
-    id: 5,
-    name: "Levi Ackerman — ODM Pose",
-    series: "Attack on Titan",
-    price: 149,
-    type: "poster",
-    inStock: true,
-    emoji: "⚡",
-    imgs: [],
-  },
-  {
-    id: 6,
-    name: "Naruto Uzumaki — Sage Mode",
-    series: "Naruto Shippuden",
-    price: 149,
-    type: "poster",
-    inStock: true,
-    emoji: "🍃",
-    imgs: [],
-  },
-  {
-    id: 8,
-    name: "Mikasa Ackerman — A3 Poster",
-    series: "Attack on Titan",
-    price: 179,
-    type: "poster",
-    inStock: false,
-    emoji: "🔺",
-    imgs: [],
-  },
-
-
-
-  // for anime figures 
-
-  {
-    id: 1,
-    name: "Itadori Yuji — Sukuna Mode",
-    series: "Jujutsu Kaisen",
-    price: 149,
-    type: "figure",
-    inStock: true,
-    emoji: "🔴",
-    imgs: ["anime_figures/Akaza.jpeg","anime_figures/Goku.jpeg"]
-  },
-  {
-    id: 7,
-    name: "Gojo Satoru Figure",
-    series: "Jujutsu Kaisen | 18cm",
-    price: 749,
-    type: "figure",
-    inStock: true,
-    emoji: "🔵",
-    imgs: [],
-  },
-  {
-    id: 3,
-    name: "Roronoa Zoro Figure",
-    series: "One Piece | 15cm",
-    price: 599,
-    type: "figure",
-    inStock: true,
-    emoji: "🗡️",
-    imgs: [],
-  },
-  {
-    id: 4,
-    name: "Nezuko Kamado Figure",
-    series: "Demon Slayer | 12cm",
-    price: 549,
-    type: "figure",
-    inStock: false,
-    emoji: "🌸",
-    imgs: [],
-  },
+  ...(typeof PRODUCTS_POSTERS    !== "undefined" ? PRODUCTS_POSTERS    : []),
+  ...(typeof PRODUCTS_FIGURES    !== "undefined" ? PRODUCTS_FIGURES    : []),
+  ...(typeof PRODUCTS_POLAROIDS  !== "undefined" ? PRODUCTS_POLAROIDS  : []),
+  ...(typeof PRODUCTS_FRAMES     !== "undefined" ? PRODUCTS_FRAMES     : []),
+  ...(typeof PRODUCTS_CUSTOM     !== "undefined" ? PRODUCTS_CUSTOM     : []),
 ];
 
 // ============================================================
@@ -107,8 +25,9 @@ const IG_DM_URL = "https://www.instagram.com/direct/t/18063073595391388/";
 // ============================================================
 //  STATE
 // ============================================================
-let cart = []; // Each item: { id, name, series, price, type, inStock, emoji, imgs, qty }
+let cart = [];
 let currentFilter = "all";
+let currentSubFilter = "all"; // for poster sub-tabs: all | anime | cars | singers
 let currentSearch = "";
 let holdTimer = null;
 const HOLD_MS = 500;
@@ -118,28 +37,67 @@ let lbTouchStartX = 0;
 let lbProductId = null;
 
 // ============================================================
+//  BADGE LABEL HELPER
+// ============================================================
+function badgeLabel(type) {
+  const map = {
+    poster:       "POSTER",
+    figure:       "FIGURE",
+    polaroid:     "POLAROID",
+    frame:        "FRAME",
+    customizable: "CUSTOM",
+  };
+  return map[type] || type.toUpperCase();
+}
+
+// ============================================================
+//  PAGINATION STATE
+// ============================================================
+var currentPage = 1;
+var ITEMS_PER_PAGE = 8;
+
+// ============================================================
 //  RENDER PRODUCTS
 // ============================================================
-function renderProducts(filter, search) {
+function renderProducts(filter, search, page) {
   filter = filter || currentFilter || "all";
   search = (search !== undefined ? search : currentSearch).trim().toLowerCase();
+  if (page) currentPage = page;
 
   var grid = document.getElementById("productGrid");
   var filtered = PRODUCTS.filter(function(p) {
     var typeMatch = filter === "all" || p.type === filter;
+    var subMatch = true;
+    if (filter === "poster" && currentSubFilter !== "all") {
+      subMatch = p.subtype === currentSubFilter;
+    }
     var searchMatch = !search ||
       p.name.toLowerCase().includes(search) ||
       p.series.toLowerCase().includes(search) ||
-      p.type.toLowerCase().includes(search);
-    return typeMatch && searchMatch;
+      p.type.toLowerCase().includes(search) ||
+      (p.subtype && p.subtype.toLowerCase().includes(search));
+    return typeMatch && subMatch && searchMatch;
   });
+
+  // Show/hide poster sub-tabs
+  var subBar = document.getElementById("posterSubBar");
+  if (subBar) {
+    subBar.style.display = (filter === "poster") ? "flex" : "none";
+  }
 
   if (filtered.length === 0) {
     grid.innerHTML = '<div class="no-results">No results for "<span>' + (search || filter) + '</span>" 😔</div>';
+    renderPagination(0, 0);
     return;
   }
 
-  grid.innerHTML = filtered.map(function(p) {
+  // Pagination slice
+  var totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  if (currentPage > totalPages) currentPage = 1;
+  var start = (currentPage - 1) * ITEMS_PER_PAGE;
+  var pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+  grid.innerHTML = pageItems.map(function(p) {
     var hasImgs = p.imgs && p.imgs.length > 0;
     var firstImg = hasImgs ? p.imgs[0] : "";
     var multiHint = hasImgs
@@ -160,7 +118,7 @@ function renderProducts(filter, search) {
             ? '<img class="product-img" src="' + firstImg + '" alt="' + p.name + '" loading="lazy" draggable="false" />'
             : '<div class="product-img-placeholder">' + p.emoji + '</div>'
           ) +
-          '<span class="badge-type">' + (p.type === "poster" ? "POSTER" : "FIGURE") + '</span>' +
+          '<span class="badge-type">' + badgeLabel(p.type) + '</span>' +
           (!p.inStock ? '<div class="badge-sold">SOLD OUT</div>' : "") +
           multiHint +
           '<div class="hold-ring" id="ring-' + p.id + '"></div>' +
@@ -177,6 +135,63 @@ function renderProducts(filter, search) {
       '</div>'
     );
   }).join("");
+
+  renderPagination(totalPages, currentPage);
+
+  // Scroll to top of grid smoothly
+  if (page && page !== 1) {
+    grid.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+// ============================================================
+//  PAGINATION RENDERER
+// ============================================================
+function renderPagination(totalPages, active) {
+  var existing = document.getElementById("paginationBar");
+  if (existing) existing.remove();
+  if (totalPages <= 1) return;
+
+  var bar = document.createElement("div");
+  bar.id = "paginationBar";
+  bar.className = "pagination-bar";
+
+  // Prev button
+  var prevDisabled = active <= 1 ? "disabled" : "";
+  bar.innerHTML += '<button class="pg-btn pg-prev" ' + prevDisabled + ' onclick="goPage(' + (active - 1) + ')">&#8249;</button>';
+
+  // Page number buttons — show max 5 around current
+  var start = Math.max(1, active - 2);
+  var end = Math.min(totalPages, active + 2);
+
+  if (start > 1) {
+    bar.innerHTML += '<button class="pg-btn" onclick="goPage(1)">1</button>';
+    if (start > 2) bar.innerHTML += '<span class="pg-ellipsis">…</span>';
+  }
+
+  for (var i = start; i <= end; i++) {
+    var activeClass = i === active ? " pg-active" : "";
+    bar.innerHTML += '<button class="pg-btn' + activeClass + '" onclick="goPage(' + i + ')">' + i + '</button>';
+  }
+
+  if (end < totalPages) {
+    if (end < totalPages - 1) bar.innerHTML += '<span class="pg-ellipsis">…</span>';
+    bar.innerHTML += '<button class="pg-btn" onclick="goPage(' + totalPages + ')">' + totalPages + '</button>';
+  }
+
+  // Next button
+  var nextDisabled = active >= totalPages ? "disabled" : "";
+  bar.innerHTML += '<button class="pg-btn pg-next" ' + nextDisabled + ' onclick="goPage(' + (active + 1) + ')">&#8250;</button>';
+
+  // Info text
+  bar.innerHTML += '<div class="pg-info">Page ' + active + ' of ' + totalPages + '</div>';
+
+  document.querySelector("main").appendChild(bar);
+}
+
+function goPage(p) {
+  currentPage = p;
+  renderProducts(currentFilter, currentSearch, p);
 }
 
 // ============================================================
@@ -250,9 +265,8 @@ function renderLbSlide() {
     '</div>';
   }).join("");
 
-  // Scroll track to current index
   var slideW = track.parentElement.offsetWidth;
-  track.scrollTo({ left: lbIndex * slideW, behavior: "smooth" });
+  track.scrollTo({ left: lbIndex * slideW, behavior: "instant" });
   updateLbCounter();
 }
 
@@ -281,7 +295,6 @@ function updateLbCounter() {
   el.textContent = lbImgs.length > 1 ? (lbIndex + 1) + " / " + lbImgs.length : "";
 }
 
-// Track scroll to sync dots + counter
 function lbTrackScroll() {
   var track = document.getElementById("lbTrack");
   var slideW = track.parentElement.offsetWidth;
@@ -293,14 +306,12 @@ function lbTrackScroll() {
   }
 }
 
-// Touch swipe fallback
 function lbTouchStart(e) { lbTouchStartX = e.touches[0].clientX; }
 function lbTouchEnd(e) {
   var dx = e.changedTouches[0].clientX - lbTouchStartX;
   if (Math.abs(dx) > 50) { dx < 0 ? lbNext() : lbPrev(); }
 }
 
-// Keyboard
 document.addEventListener("keydown", function(e) {
   if (!document.getElementById("lightbox").classList.contains("open")) return;
   if (e.key === "ArrowRight") lbNext();
@@ -313,13 +324,44 @@ function lbAddFromPopup() {
 }
 
 // ============================================================
-//  FILTER
+//  MAIN FILTER (ALL / POSTERS / FIGURES / POLAROID / FRAMES / CUSTOMIZABLE)
 // ============================================================
 function filterProducts(type, el) {
   currentFilter = type;
+  if (type !== "poster") currentSubFilter = "all";
+
   document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
   el.classList.add("active");
-  renderProducts(type, currentSearch);
+
+  // Custom tab → show contact page, hide grid + search
+  var grid = document.getElementById("productGrid");
+  var customPage = document.getElementById("customContactPage");
+  var searchWrap = document.querySelector(".search-bar-wrap");
+  var subBar = document.getElementById("posterSubBar");
+
+  if (type === "customizable") {
+    grid.style.display = "none";
+    if (customPage) customPage.style.display = "flex";
+    if (searchWrap) searchWrap.style.display = "none";
+    if (subBar) subBar.style.display = "none";
+  } else {
+    grid.style.display = "";
+    if (customPage) customPage.style.display = "none";
+    if (searchWrap) searchWrap.style.display = "";
+    currentPage = 1;
+    renderProducts(type, currentSearch);
+  }
+}
+
+// ============================================================
+//  POSTER SUB-FILTER (ANIME / CARS / SINGERS)
+// ============================================================
+function filterPostersBy(subtype, el) {
+  currentSubFilter = subtype;
+  currentPage = 1;
+  document.querySelectorAll(".sub-filter-btn").forEach(function(b) { b.classList.remove("active"); });
+  el.classList.add("active");
+  renderProducts("poster", currentSearch);
 }
 
 // ============================================================
@@ -327,6 +369,7 @@ function filterProducts(type, el) {
 // ============================================================
 function onSearchInput(val) {
   currentSearch = val;
+  currentPage = 1;
   var clearBtn = document.getElementById("searchClear");
   if (clearBtn) clearBtn.style.display = val ? "flex" : "none";
   renderProducts(currentFilter, val);
@@ -334,6 +377,7 @@ function onSearchInput(val) {
 
 function clearSearch() {
   currentSearch = "";
+  currentPage = 1;
   var input = document.getElementById("searchInput");
   if (input) input.value = "";
   var clearBtn = document.getElementById("searchClear");
@@ -367,7 +411,6 @@ function addToCart(id) {
     }, 1200);
   }
 
-  // Also update lightbox btn if open
   var lbAddBtn = document.querySelector(".lb-add-btn");
   if (lbAddBtn && lbProductId === id && product.inStock) {
     lbAddBtn.textContent = "✓ ADDED!";
@@ -470,10 +513,8 @@ function orderOnInstagram() {
   var message = "🛒 Order from postiiify website!\n\n" +
     itemsList +
     "\n\n──────────────────\n" +
-    "Items: " + totalQty + "  |  Total: ₹" + total +
-    "";
+    "Items: " + totalQty + "  |  Total: ₹" + total;
 
-  // Copy to clipboard so user can paste in DM
   var copied = false;
   if (navigator.clipboard) {
     navigator.clipboard.writeText(message).then(function() {
@@ -481,10 +522,8 @@ function orderOnInstagram() {
     }).catch(function() {});
   }
 
-  // Also store in sessionStorage as fallback
   try { sessionStorage.setItem("postiify_order", message); } catch(e) {}
 
-  // Show the message in a popup before opening Instagram
   showOrderPreview(message);
 }
 
@@ -492,9 +531,14 @@ function orderOnInstagram() {
 //  ORDER PREVIEW POPUP
 // ============================================================
 function showOrderPreview(message) {
-  // Remove existing popup if any
   var existing = document.getElementById("orderPreview");
   if (existing) existing.remove();
+
+  var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var hint = isMobile
+    ? "📋 STEP 1: Copy this message below<br/>📩 STEP 2: Open Instagram → tap Message → paste!"
+    : "Copy this message, then paste it in the Instagram DM:";
+  var igBtnLabel = isMobile ? "📩 OPEN @postiiify ON INSTAGRAM" : "📩 OPEN INSTAGRAM DM";
 
   var popup = document.createElement("div");
   popup.id = "orderPreview";
@@ -506,12 +550,12 @@ function showOrderPreview(message) {
         '<button onclick="closeOrderPreview()">✕</button>',
       '</div>',
       '<div class="order-preview-body">',
-        '<p class="order-preview-hint">Copy this message, then paste it in the Instagram DM:</p>',
+        '<p class="order-preview-hint">' + hint + '</p>',
         '<pre class="order-preview-text" id="orderMsgText">' + message.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</pre>',
       '</div>',
       '<div class="order-preview-footer">',
         '<button class="order-copy-btn" onclick="copyOrderMsg()">📋 COPY MESSAGE</button>',
-        '<button class="order-ig-btn" onclick="openInstagram()">📩 OPEN INSTAGRAM DM</button>',
+        '<button class="order-ig-btn" onclick="openInstagram()">' + igBtnLabel + '</button>',
       '</div>',
     '</div>'
   ].join("");
@@ -551,9 +595,16 @@ function fallbackCopy(text) {
   document.body.removeChild(ta);
 }
 
+// ============================================================
+//  INSTAGRAM DM LINK — mobile vs desktop detection
+// ============================================================
 function openInstagram() {
-  window.open(IG_DM_URL, "_blank");
-  showToast("Opening Instagram DM! 📩");
+  var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var url = isMobile
+    ? "https://www.instagram.com/postiiify/"   // mobile: open profile, user DMs manually after copying
+    : IG_DM_URL;                                // desktop: direct DM link works
+  window.open(url, "_blank");
+  showToast(isMobile ? "Copy karke DM karo! 📩" : "Opening Instagram DM! 📩");
 }
 
 // ============================================================
@@ -580,7 +631,6 @@ document.addEventListener("DOMContentLoaded", function() {
   renderProducts("all", "");
 });
 
-// Close lightbox when clicking overlay background
 function handleLbOverlayClick(e) {
   if (e.target === document.getElementById("lightbox")) closeLightbox();
 }
