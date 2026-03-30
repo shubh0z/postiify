@@ -15,7 +15,7 @@ const PRODUCTS_FRAMES = [
 
   {
     id: 601,
-    name: "Itachi Uchiha — Wood Frame",
+    name: "Black Frame - with custom posters",
     series: "Naruto | A4 · Black Frame",
     price: 349,
     type: "frame",
@@ -26,7 +26,7 @@ const PRODUCTS_FRAMES = [
   },
   {
     id: 602,
-    name: "Attack on Titan — Survey Corps",
+    name: "White Frame - with custom posters",
     series: "AoT | A3 · Dark Frame",
     price: 449,
     type: "frame",
