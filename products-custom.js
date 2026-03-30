@@ -16,50 +16,6 @@
 
 const PRODUCTS_CUSTOM = [
 
-  {
-    id: 701,
-    name: "Custom Name Poster",
-    series: "Your name + character · A4",
-    price: 249,
-    type: "customizable",
-    subtype: "customizable",
-    inStock: true,
-    emoji: "✏️",
-    imgs: [],
-  },
-  {
-    id: 702,
-    name: "Custom Couple Polaroid Pack",
-    series: "Your photos · 6 pcs · DM details",
-    price: 299,
-    type: "customizable",
-    subtype: "customizable",
-    inStock: true,
-    emoji: "💌",
-    imgs: [],
-  },
-  {
-    id: 703,
-    name: "Custom Framed Portrait",
-    series: "Your photo · A4 · Black Frame",
-    price: 549,
-    type: "customizable",
-    subtype: "customizable",
-    inStock: true,
-    emoji: "🎨",
-    imgs: [],
-  },
-  {
-    id: 704,
-    name: "Custom Birthday Poster",
-    series: "Name + date + theme · A3",
-    price: 349,
-    type: "customizable",
-    subtype: "customizable",
-    inStock: true,
-    emoji: "🎂",
-    imgs: [],
-  },
   // ➕ Add more customizable products below this line...
 
 ];
