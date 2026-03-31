@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>postiiify – Anime Shop</title>
+  
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Noto+Sans+JP:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── POSTER SUB-FILTER BAR ── */
+    .poster-sub-bar {
+      display: none;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 16px 12px;
+      background: var(--panel);
+      border-bottom: 2px solid var(--border);
+      justify-content: center;
+    }
+    .sub-filter-btn {
+      font-family: var(--font-title);
+      font-size: 13px;
+      letter-spacing: 1px;
+      padding: 4px 14px;
+      border: 2px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .sub-filter-btn.active,
+    .sub-filter-btn:hover {
+      background: var(--accent2);
+      color: #000;
+      border-color: var(--accent2);
+    }
+
+    /* ── OFFER BANNER ── */
+    .offer-banner {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+      border-top: 2px solid var(--accent2);
+      border-bottom: 2px solid var(--accent2);
+      position: relative;
+      overflow: hidden;
+      animation: offerSlideIn 0.3s ease;
+    }
+    .offer-banner.visible { display: flex; }
+    @keyframes offerSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .offer-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 60px,
+        rgba(255,214,0,0.03) 60px,
+        rgba(255,214,0,0.03) 61px
+      );
+      pointer-events: none;
+    }
+    .offer-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      animation: offerBounce 1.8s ease-in-out infinite;
+    }
+    @keyframes offerBounce {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.18); }
+    }
+    .offer-text-wrap { flex: 1; min-width: 0; }
+    .offer-main-text {
+      font-family: var(--font-title);
+      font-size: 15px;
+      letter-spacing: 1.5px;
+      color: var(--accent2);
+      text-shadow: 0 0 10px rgba(255,214,0,0.4);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .offer-sub-text {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .offer-tag {
+      font-family: var(--font-title);
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 3px 10px;
+      background: var(--accent2);
+      color: #000;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    @media (max-width: 480px) {
+      .offer-main-text { font-size: 13px; }
+      .offer-tag { display: none; }
+    }
+
+    /* ── CART OFFER ROWS ── */
+    .cart-subtotal-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-dim);
+      border-top: 1px dashed var(--border);
+      margin-top: 8px;
+    }
+    .cart-offer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      margin-top: 4px;
+      background: rgba(255, 214, 0, 0.07);
+      border: 1px solid rgba(255, 214, 0, 0.25);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--accent2);
+      gap: 8px;
+    }
+    .cart-offer-row span:last-child {
+      font-family: var(--font-title);
+      font-size: 13px;
+      white-space: nowrap;
+      color: #4cff91;
+    }
+    .offer-free-tag {
+      background: #4cff91;
+      color: #000;
+      font-family: var(--font-title);
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
+    /* ── CUSTOM CONTACT PAGE ── */
+    .custom-contact-page {
+      padding: 24px 16px;
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .custom-contact-card {
+      background: var(--card);
+      border: 3px solid var(--accent);
+      box-shadow: 6px 6px 0 #000;
+      padding: 36px 28px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+    }
+    .custom-contact-card::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      background: linear-gradient(135deg, var(--accent), var(--accent3), var(--accent2));
+      z-index: -1;
+      filter: blur(16px);
+      opacity: 0.25;
+    }
+    .custom-contact-emoji {
+      font-size: 52px;
+      margin-bottom: 12px;
+    }
+    .custom-contact-title {
+      font-family: var(--font-title);
+      font-size: 38px;
+      letter-spacing: 3px;
+      color: var(--text);
+      text-shadow: 3px 3px 0 var(--accent);
+      margin-bottom: 4px;
+    }
+    .custom-contact-sub {
+      font-family: var(--font-jp);
+      font-size: 12px;
+      color: var(--accent3);
+      letter-spacing: 3px;
+      margin-bottom: 20px;
+    }
+    .custom-contact-desc {
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--text-dim);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+    .custom-ig-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font-title);
+      font-size: 20px;
+      letter-spacing: 2px;
+      padding: 14px 28px;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0 #000;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+      margin-bottom: 12px;
+    }
+    .custom-ig-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #000;
+      background: #ff1f55;
+    }
+    .custom-ig-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #000;
+    }
+    .custom-ig-icon { font-size: 28px; }
+    .custom-ig-handle {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      letter-spacing: 1px;
+    }
+    .custom-ig-note {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--font-body);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NOISE OVERLAY -->
+  <div class="noise"></div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-jp">ポスティファイ</span>
+        <span class="logo-en">postiiify</span>
+      </div>
+      <button class="cart-btn" onclick="toggleCart()">
+        <span class="cart-icon">🛒</span>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+    <div class="tagline">// anime posters & figures — straight from the collection //</div>
+  </header>
+
+  <!-- MAIN FILTER TABS -->
+  <div class="filter-bar-wrap">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterProducts('poster', this)">POSTERS</button>
+      <button class="filter-btn" onclick="filterProducts('figure', this)">FIGURES</button>
+      <button class="filter-btn" onclick="filterProducts('polaroid', this)">POLAROID</button>
+      <button class="filter-btn" onclick="filterProducts('frame', this)">FRAMES</button>
+      <button class="filter-btn" onclick="filterProducts('customizable', this)">CUSTOM ✏️</button>
+    </div>
+  </div>
+
+  <!-- POSTER SUB-FILTER TABS (visible only when POSTERS is active) -->
+  <div class="poster-sub-bar" id="posterSubBar">
+    <button class="sub-filter-btn active" onclick="filterPostersBy('all', this)">ALL POSTERS</button>
+    <button class="sub-filter-btn" onclick="filterPostersBy('anime', this)">🎌 ANIME</button>
+    <button class="sub-filter-btn" onclick="filterPostersBy('cars', this)">🚗 CARS</button>
+    <button class="sub-filter-btn" onclick="filterPostersBy('cricket', this)">🌿 NATURE</button>
+    <button class="sub-filter-btn" onclick="filterPostersBy('singers', this)">🎤 SINGERS</button>
+  </div>
+
+  <!-- OFFER BANNER (shown only when an active offer exists for the current tab) -->
+  <div class="offer-banner" id="offerBanner">
+    <span class="offer-icon" id="offerIcon">🎁</span>
+    <div class="offer-text-wrap">
+      <div class="offer-main-text" id="offerMainText"></div>
+      <div class="offer-sub-text" id="offerSubText"></div>
+    </div>
+    <span class="offer-tag">LIMITED OFFER</span>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="search-bar-wrap">
+    <div class="search-inner">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search posters, figures, series..."
+        oninput="onSearchInput(this.value)"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none">✕</button>
+    </div>
+  </div>
+
+  <!-- PRODUCTS GRID -->
+  <main>
+    <div class="grid" id="productGrid"></div>
+
+    <!-- CUSTOM CONTACT PAGE (shown only when CUSTOM tab active) -->
+    <div class="custom-contact-page" id="customContactPage" style="display:none">
+      <div class="custom-contact-card">
+        <div class="custom-contact-emoji">✏️</div>
+        <h2 class="custom-contact-title">CUSTOM ORDERS</h2>
+        <p class="custom-contact-sub">カスタムオーダー</p>
+        <p class="custom-contact-desc">
+          Want something made just for you?<br/>
+          Posters · Polaroids · Frames · Birthday specials — all customizable!<br/><br/>
+          Just slide into our DMs on Instagram and tell us what you have in mind 🎨
+        </p>
+        <a class="custom-ig-btn" href="https://www.instagram.com/postiiify/" target="_blank">
+          <span class="custom-ig-icon">📩</span>
+          CONTACT ON INSTAGRAM
+          <span class="custom-ig-handle">@postiiify</span>
+        </a>
+        <p class="custom-ig-note">Tap to open Instagram → DM us your idea!</p>
+      </div>
+    </div>
+
+    <!-- COMING SOON PAGE (shown when FIGURES tab active) -->
+    <div class="custom-contact-page" id="comingSoonPage" style="display:none">
+      <div class="custom-contact-card">
+        <div class="custom-contact-emoji">🔮</div>
+        <h2 class="custom-contact-title">COMING SOON</h2>
+        <p class="custom-contact-sub">もうすぐ登場</p>
+        <p class="custom-contact-desc">
+          Figures are on their way! 📦<br/>
+          We're curating the best anime figures<br/>
+          for our collection — stay tuned! 🎌
+        </p>
+        <a class="custom-ig-btn" href="https://www.instagram.com/postiiify/" target="_blank">
+          <span class="custom-ig-icon">📸</span>
+          FOLLOW FOR UPDATES
+          <span class="custom-ig-handle">@postiiify</span>
+        </a>
+        <p class="custom-ig-note">We'll announce drops on Instagram first!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- CART SIDEBAR -->
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <aside class="cart-sidebar" id="cartSidebar">
+    <div class="cart-header">
+      <h2>YOUR CART <span class="jp-small">カート</span></h2>
+      <button class="close-btn" onclick="toggleCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <p class="empty-msg">Cart is empty~ 空っぽ</p>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">TOTAL: <span id="cartTotal">₹0</span></div>
+      <button class="order-btn" onclick="orderOnInstagram()">
+        <span>ORDER ON INSTAGRAM</span>
+        <span class="ig-icon">📩</span>
+      </button>
+      <p class="order-note">You'll be redirected to Instagram DM with your order details!</p>
+    </div>
+  </aside>
+
+  <!-- LIGHTBOX MODAL -->
+  <div class="lb-overlay" id="lightbox" onclick="handleLbOverlayClick(event)">
+    <div class="lb-modal" onclick="event.stopPropagation()">
+      <button class="lb-close" onclick="closeLightbox()">✕</button>
+      <div class="lb-viewport">
+        <div class="lb-track" id="lbTrack"
+          onscroll="lbTrackScroll()"
+          ontouchstart="lbTouchStart(event)"
+          ontouchend="lbTouchEnd(event)">
+        </div>
+        <button class="lb-arrow lb-arrow-prev" onclick="lbPrev()">&#8249;</button>
+        <button class="lb-arrow lb-arrow-next" onclick="lbNext()">&#8250;</button>
+        <div class="lb-counter" id="lbCounter"></div>
+      </div>
+      <div class="lb-dots" id="lbDots"></div>
+      <div class="lb-info">
+        <div class="lb-info-left">
+          <div class="lb-title"></div>
+          <div class="lb-series"></div>
+        </div>
+        <div class="lb-price"></div>
+      </div>
+      <button class="lb-add-btn add-btn" onclick="lbAddFromPopup()">+ ADD TO CART</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="https://www.instagram.com/postiiify/" target="_blank" class="ig-link">
+      <span>@postiiify</span> on Instagram
+    </a>
+    <p class="footer-note">DM us for custom orders & inquiries ✦</p>
+  </footer>
+
+  <!-- ✅ PRODUCT FILES — load order matters! -->
+  <script src="products-posters.js"></script>
+  <script src="products-figures.js"></script>
+  <script src="products-polaroids.js"></script>
+  <script src="products-frames.js"></script>
+  <script src="products-custom.js"></script>
+
+  <script src="products-offers.js"></script>
+
+  <!-- MAIN SCRIPT (always load LAST) -->
+  <script src="script.js"></script>
+</body>
+</html>
