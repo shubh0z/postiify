@@ -15,25 +15,25 @@ const PRODUCTS_FRAMES = [
 
   {
     id: 601,
-    name: "",
-    series: "Black Frame - with custom posters",
+    name: "Black Frame - with custom posters",
+    series: "A4 · Light Frame ",
     price: 250,
     type: "frame",
     subtype: "frame",
     inStock: true,
     emoji: "🖼️",
-    imgs: [],
+    imgs: ["frames/black.PNG"],
   },
   {
     id: 602,
     name: "White Frame - with custom posters",
-    series: "AoT | A3 · Dark Frame",
+    series: "A4 · Dark Frame",
     price: 250,
     type: "frame",
     subtype: "frame",
     inStock: true,
-    emoji: "⚔️",
-    imgs: [],
+    emoji: "🖼️",
+    imgs: ["frames/White.PNG"],
   },
   // ➕ Add more frames below this line...
 
