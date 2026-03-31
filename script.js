@@ -26,7 +26,7 @@ const IG_DM_URL = "https://www.instagram.com/direct/t/18063073595391388/";
 //  STATE
 // ============================================================
 let cart = [];
-let currentFilter = "all";
+let currentFilter = "poster";
 let currentSubFilter = "all"; // for poster sub-tabs: all | anime | cars | singers
 let currentSearch = "";
 let holdTimer = null;
@@ -324,7 +324,43 @@ function lbAddFromPopup() {
 }
 
 // ============================================================
-//  MAIN FILTER (ALL / POSTERS / FIGURES / POLAROID / FRAMES / CUSTOMIZABLE)
+//  SCROLL ACTIVE TAB TO CENTER (mobile UX)
+// ============================================================
+function scrollTabToCenter(btn) {
+  if (!btn) return;
+  var bar = btn.parentElement;
+  if (!bar) return;
+  var btnLeft   = btn.offsetLeft;
+  var btnWidth  = btn.offsetWidth;
+  var barWidth  = bar.offsetWidth;
+  var scrollTo  = btnLeft - (barWidth / 2) + (btnWidth / 2);
+  bar.scrollTo({ left: scrollTo, behavior: "smooth" });
+}
+
+// ============================================================
+//  OFFER BANNER
+// ============================================================
+function showOfferBanner(type) {
+  var banner = document.getElementById("offerBanner");
+  if (!banner) return;
+
+  var offers = (typeof OFFERS !== "undefined") ? OFFERS : [];
+  var offer = offers.find(function(o) { return o.type === type && o.active; });
+
+  if (offer) {
+    document.getElementById("offerIcon").textContent = offer.icon;
+    document.getElementById("offerMainText").textContent = offer.text;
+    var subEl = document.getElementById("offerSubText");
+    subEl.textContent = offer.sub || "";
+    subEl.style.display = offer.sub ? "block" : "none";
+    banner.classList.add("visible");
+  } else {
+    banner.classList.remove("visible");
+  }
+}
+
+// ============================================================
+//  MAIN FILTER (POSTERS / FIGURES / POLAROID / FRAMES / CUSTOMIZABLE)
 // ============================================================
 function filterProducts(type, el) {
   currentFilter = type;
@@ -332,21 +368,33 @@ function filterProducts(type, el) {
 
   document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
   el.classList.add("active");
+  scrollTabToCenter(el);
+
+  showOfferBanner(type);
 
   // Custom tab → show contact page, hide grid + search
   var grid = document.getElementById("productGrid");
   var customPage = document.getElementById("customContactPage");
+  var comingSoonPage = document.getElementById("comingSoonPage");
   var searchWrap = document.querySelector(".search-bar-wrap");
   var subBar = document.getElementById("posterSubBar");
 
   if (type === "customizable") {
     grid.style.display = "none";
     if (customPage) customPage.style.display = "flex";
+    if (comingSoonPage) comingSoonPage.style.display = "none";
+    if (searchWrap) searchWrap.style.display = "none";
+    if (subBar) subBar.style.display = "none";
+  } else if (type === "figure") {
+    grid.style.display = "none";
+    if (customPage) customPage.style.display = "none";
+    if (comingSoonPage) comingSoonPage.style.display = "flex";
     if (searchWrap) searchWrap.style.display = "none";
     if (subBar) subBar.style.display = "none";
   } else {
     grid.style.display = "";
     if (customPage) customPage.style.display = "none";
+    if (comingSoonPage) comingSoonPage.style.display = "none";
     if (searchWrap) searchWrap.style.display = "";
     currentPage = 1;
     renderProducts(type, currentSearch);
@@ -361,6 +409,7 @@ function filterPostersBy(subtype, el) {
   currentPage = 1;
   document.querySelectorAll(".sub-filter-btn").forEach(function(b) { b.classList.remove("active"); });
   el.classList.add("active");
+  scrollTabToCenter(el);
   renderProducts("poster", currentSearch);
 }
 
@@ -447,6 +496,68 @@ function changeQty(id, delta) {
 // ============================================================
 //  CART UI
 // ============================================================
+// ============================================================
+//  CALCULATE APPLIED OFFERS FROM CART
+// ============================================================
+function calcAppliedOffers() {
+  var offers = (typeof OFFERS !== "undefined") ? OFFERS : [];
+  var applied = [];
+
+  offers.forEach(function(offer) {
+    if (!offer.active) return;
+
+    // Count total qty of this type in cart
+    var qtyOfType = cart
+      .filter(function(i) { return i.type === offer.type; })
+      .reduce(function(s, i) { return s + i.qty; }, 0);
+
+    if (offer.type === "poster") {
+      // Buy 8 → 2 free: discount = price of 2 cheapest posters in cart
+      if (qtyOfType >= 8) {
+        var posterPrices = [];
+        cart.filter(function(i) { return i.type === "poster"; })
+          .forEach(function(i) {
+            for (var q = 0; q < i.qty; q++) posterPrices.push(i.price);
+          });
+        posterPrices.sort(function(a, b) { return a - b; });
+        var freeVal = (posterPrices[0] || 0) + (posterPrices[1] || 0);
+        applied.push({
+          icon: "🎁",
+          label: "Buy 8 Posters → 2 FREE!",
+          discount: freeVal,
+          note: ""
+        });
+      }
+    }
+
+    if (offer.type === "frame") {
+      // Buy 2 frames → ₹50 off
+      if (qtyOfType >= 2) {
+        applied.push({
+          icon: "💸",
+          label: "Buy 2 Frames → ₹50 OFF!",
+          discount: 50,
+          note: ""
+        });
+      }
+    }
+
+    if (offer.type === "polaroid") {
+      // 3 sets → free delivery
+      if (qtyOfType >= 3) {
+        applied.push({
+          icon: "🚚",
+          label: "3 Polaroid Sets → Free Delivery!",
+          discount: 0,
+          note: "FREE DELIVERY"
+        });
+      }
+    }
+  });
+
+  return applied;
+}
+
 function updateCartUI() {
   var container = document.getElementById("cartItems");
   var totalEl = document.getElementById("cartTotal");
@@ -474,8 +585,30 @@ function updateCartUI() {
     '</div>';
   }).join("");
 
-  var total = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
-  totalEl.textContent = "₹" + total;
+  // Applied offers rows
+  var appliedOffers = calcAppliedOffers();
+  var subtotal = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
+  var totalDiscount = appliedOffers.reduce(function(s, o) { return s + o.discount; }, 0);
+  var finalTotal = Math.max(0, subtotal - totalDiscount);
+
+  if (appliedOffers.length > 0) {
+    // Subtotal row
+    container.innerHTML +=
+      '<div class="cart-subtotal-row">' +
+        '<span>Subtotal</span><span>₹' + subtotal + '</span>' +
+      '</div>';
+
+    // Each offer row
+    appliedOffers.forEach(function(o) {
+      container.innerHTML +=
+        '<div class="cart-offer-row">' +
+          '<span>' + o.icon + ' ' + o.label + '</span>' +
+          '<span>' + (o.discount > 0 ? '−₹' + o.discount : '<span class="offer-free-tag">' + o.note + '</span>') + '</span>' +
+        '</div>';
+    });
+  }
+
+  totalEl.textContent = "₹" + finalTotal;
 }
 
 function updateCartCount() {
@@ -508,12 +641,24 @@ function orderOnInstagram() {
   }).join("\n");
 
   var totalQty = cart.reduce(function(s, i) { return s + i.qty; }, 0);
-  var total = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
+  var subtotal = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
+  var appliedOffers = calcAppliedOffers();
+  var totalDiscount = appliedOffers.reduce(function(s, o) { return s + o.discount; }, 0);
+  var finalTotal = Math.max(0, subtotal - totalDiscount);
+
+  var offerLines = "";
+  if (appliedOffers.length > 0) {
+    offerLines = "\n\n🎉 OFFERS APPLIED:\n" + appliedOffers.map(function(o) {
+      return o.icon + " " + o.label + (o.discount > 0 ? " (−₹" + o.discount + ")" : " (" + o.note + ")");
+    }).join("\n");
+  }
 
   var message = "🛒 Order from postiiify website!\n\n" +
     itemsList +
+    offerLines +
     "\n\n──────────────────\n" +
-    "Items: " + totalQty + "  |  Total: ₹" + total;
+    "Items: " + totalQty + "  |  Total: ₹" + finalTotal +
+    (totalDiscount > 0 ? "  (saved ₹" + totalDiscount + "! 🎉)" : "");
 
   var copied = false;
   if (navigator.clipboard) {
@@ -628,7 +773,10 @@ function showToast(msg) {
 //  INIT
 // ============================================================
 document.addEventListener("DOMContentLoaded", function() {
-  renderProducts("all", "");
+  renderProducts("poster", "");
+  var subBar = document.getElementById("posterSubBar");
+  if (subBar) subBar.style.display = "flex";
+  showOfferBanner("poster");
 });
 
 function handleLbOverlayClick(e) {
