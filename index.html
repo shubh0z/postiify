@@ -38,6 +38,124 @@
       border-color: var(--accent2);
     }
 
+    /* ── OFFER BANNER ── */
+    .offer-banner {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+      border-top: 2px solid var(--accent2);
+      border-bottom: 2px solid var(--accent2);
+      position: relative;
+      overflow: hidden;
+      animation: offerSlideIn 0.3s ease;
+    }
+    .offer-banner.visible { display: flex; }
+    @keyframes offerSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .offer-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 60px,
+        rgba(255,214,0,0.03) 60px,
+        rgba(255,214,0,0.03) 61px
+      );
+      pointer-events: none;
+    }
+    .offer-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      animation: offerBounce 1.8s ease-in-out infinite;
+    }
+    @keyframes offerBounce {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.18); }
+    }
+    .offer-text-wrap { flex: 1; min-width: 0; }
+    .offer-main-text {
+      font-family: var(--font-title);
+      font-size: 15px;
+      letter-spacing: 1.5px;
+      color: var(--accent2);
+      text-shadow: 0 0 10px rgba(255,214,0,0.4);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .offer-sub-text {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .offer-tag {
+      font-family: var(--font-title);
+      font-size: 11px;
+      letter-spacing: 1px;
+      padding: 3px 10px;
+      background: var(--accent2);
+      color: #000;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0 #000;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    @media (max-width: 480px) {
+      .offer-main-text { font-size: 13px; }
+      .offer-tag { display: none; }
+    }
+
+    /* ── CART OFFER ROWS ── */
+    .cart-subtotal-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-dim);
+      border-top: 1px dashed var(--border);
+      margin-top: 8px;
+    }
+    .cart-offer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      margin-top: 4px;
+      background: rgba(255, 214, 0, 0.07);
+      border: 1px solid rgba(255, 214, 0, 0.25);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      color: var(--accent2);
+      gap: 8px;
+    }
+    .cart-offer-row span:last-child {
+      font-family: var(--font-title);
+      font-size: 13px;
+      white-space: nowrap;
+      color: #4cff91;
+    }
+    .offer-free-tag {
+      background: #4cff91;
+      color: #000;
+      font-family: var(--font-title);
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
     /* ── CUSTOM CONTACT PAGE ── */
     .custom-contact-page {
       padding: 24px 16px;
@@ -155,8 +273,7 @@
   <!-- MAIN FILTER TABS -->
   <div class="filter-bar-wrap">
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterProducts('all', this)">ALL</button>
-      <button class="filter-btn" onclick="filterProducts('poster', this)">POSTERS</button>
+      <button class="filter-btn active" onclick="filterProducts('poster', this)">POSTERS</button>
       <button class="filter-btn" onclick="filterProducts('figure', this)">FIGURES</button>
       <button class="filter-btn" onclick="filterProducts('polaroid', this)">POLAROID</button>
       <button class="filter-btn" onclick="filterProducts('frame', this)">FRAMES</button>
@@ -170,6 +287,16 @@
     <button class="sub-filter-btn" onclick="filterPostersBy('anime', this)">🎌 ANIME</button>
     <button class="sub-filter-btn" onclick="filterPostersBy('cars', this)">🚗 CARS</button>
     <button class="sub-filter-btn" onclick="filterPostersBy('singers', this)">🎤 SINGERS</button>
+  </div>
+
+  <!-- OFFER BANNER (shown only when an active offer exists for the current tab) -->
+  <div class="offer-banner" id="offerBanner">
+    <span class="offer-icon" id="offerIcon">🎁</span>
+    <div class="offer-text-wrap">
+      <div class="offer-main-text" id="offerMainText"></div>
+      <div class="offer-sub-text" id="offerSubText"></div>
+    </div>
+    <span class="offer-tag">LIMITED OFFER</span>
   </div>
 
   <!-- SEARCH BAR -->
@@ -210,6 +337,26 @@
           <span class="custom-ig-handle">@postiiify</span>
         </a>
         <p class="custom-ig-note">Tap to open Instagram → DM us your idea!</p>
+      </div>
+    </div>
+
+    <!-- COMING SOON PAGE (shown when FIGURES tab active) -->
+    <div class="custom-contact-page" id="comingSoonPage" style="display:none">
+      <div class="custom-contact-card">
+        <div class="custom-contact-emoji">🔮</div>
+        <h2 class="custom-contact-title">COMING SOON</h2>
+        <p class="custom-contact-sub">もうすぐ登場</p>
+        <p class="custom-contact-desc">
+          Figures are on their way! 📦<br/>
+          We're curating the best anime figures<br/>
+          for our collection — stay tuned! 🎌
+        </p>
+        <a class="custom-ig-btn" href="https://www.instagram.com/postiiify/" target="_blank">
+          <span class="custom-ig-icon">📸</span>
+          FOLLOW FOR UPDATES
+          <span class="custom-ig-handle">@postiiify</span>
+        </a>
+        <p class="custom-ig-note">We'll announce drops on Instagram first!</p>
       </div>
     </div>
   </main>
@@ -274,6 +421,8 @@
   <script src="products-polaroids.js"></script>
   <script src="products-frames.js"></script>
   <script src="products-custom.js"></script>
+
+  <script src="products-offers.js"></script>
 
   <!-- MAIN SCRIPT (always load LAST) -->
   <script src="script.js"></script>
