@@ -15,9 +15,9 @@ const PRODUCTS_FRAMES = [
 
   {
     id: 601,
-    name: "Black Frame - with custom posters",
-    series: "Naruto | A4 · Black Frame",
-    price: 349,
+    name: "",
+    series: "Black Frame - with custom posters",
+    price: 250,
     type: "frame",
     subtype: "frame",
     inStock: true,
@@ -28,7 +28,7 @@ const PRODUCTS_FRAMES = [
     id: 602,
     name: "White Frame - with custom posters",
     series: "AoT | A3 · Dark Frame",
-    price: 449,
+    price: 250,
     type: "frame",
     subtype: "frame",
     inStock: true,
