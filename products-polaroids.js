@@ -15,20 +15,9 @@ const PRODUCTS_POLAROIDS = [
 
   {
     id: 501,
-    name: "Demon Slayer — Tanjiro & Nezuko",
-    series: "Polaroid Pack · 6 pcs",
-    price: 199,
-    type: "polaroid",
-    subtype: "polaroid",
-    inStock: true,
-    emoji: "📸",
-    imgs: [],
-  },
-  {
-    id: 502,
-    name: "Naruto Characters Pack",
-    series: "Polaroid Pack · 6 pcs",
-    price: 199,
+    name: "Polaroid Pack",
+    series: "Any Design · Set of 24 pcs",
+    price: 120,
     type: "polaroid",
     subtype: "polaroid",
     inStock: true,
