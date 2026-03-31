@@ -22,7 +22,7 @@ const PRODUCTS_POLAROIDS = [
     subtype: "polaroid",
     inStock: true,
     emoji: "📸",
-    imgs: [],
+    imgs: [polaroid/polaroid.jpeg],
   },
   // ➕ Add more polaroids below this line...
 
