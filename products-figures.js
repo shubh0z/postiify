@@ -12,51 +12,5 @@
 // ============================================================
 
 const PRODUCTS_FIGURES = [
-
-  {
-    id: 401,
-    name: "Itadori Yuji — Sukuna Mode",
-    series: "Jujutsu Kaisen",
-    price: 149,
-    type: "figure",
-    subtype: "figure",
-    inStock: true,
-    emoji: "🔴",
-    imgs: ["anime_figures/Akaza.jpeg", "anime_figures/Goku.jpeg"],
-  },
-  {
-    id: 402,
-    name: "Gojo Satoru Figure",
-    series: "Jujutsu Kaisen | 18cm",
-    price: 749,
-    type: "figure",
-    subtype: "figure",
-    inStock: true,
-    emoji: "🔵",
-    imgs: [],
-  },
-  {
-    id: 403,
-    name: "Roronoa Zoro Figure",
-    series: "One Piece | 15cm",
-    price: 599,
-    type: "figure",
-    subtype: "figure",
-    inStock: true,
-    emoji: "🗡️",
-    imgs: [],
-  },
-  {
-    id: 404,
-    name: "Nezuko Kamado Figure",
-    series: "Demon Slayer | 12cm",
-    price: 549,
-    type: "figure",
-    subtype: "figure",
-    inStock: false,
-    emoji: "🌸",
-    imgs: [],
-  },
-  // ➕ Add more figures below this line...
-
+  // Coming soon — figures will be added here soon!
 ];
