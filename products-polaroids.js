@@ -17,7 +17,7 @@ const PRODUCTS_POLAROIDS = [
     id: 501,
     name: "Polaroid Pack",
     series: "Any Design · Set of 24 pcs",
-    price: 119,
+    price: 149,
     type: "polaroid",
     subtype: "polaroid",
     inStock: true,
