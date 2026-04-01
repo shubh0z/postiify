@@ -18,15 +18,15 @@ const OFFERS = [
   {
     type: "frame",  
     icon: "💸",
-    text: "Buy 3+ Frames → Get ₹49 OFF!",
+    text: "Buy 3 Frames → Get ₹49 OFF!",
     sub: "3 frames = ₹49 off with free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
     active: true,
   },
   {
     type: "polaroid",
     icon: "🚚",
-    text: "Order 3+ Sets → FREE Delivery!",
-    sub: "3+ sets = FREE delivery 🎉\n", //1-2 sets = delivery charge applicable (DM for details)",
+    text: "Order 3 Sets → FREE Delivery!",
+    sub: "3 sets = FREE delivery 🎉\n", //1-2 sets = delivery charge applicable (DM for details)",
     active: true,
   },
 ];
