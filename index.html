@@ -12,13 +12,16 @@
     /* ── POSTER SUB-FILTER BAR ── */
     .poster-sub-bar {
       display: none;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
       gap: 8px;
       padding: 8px 16px 12px;
       background: var(--panel);
       border-bottom: 2px solid var(--border);
-      justify-content: center;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .poster-sub-bar::-webkit-scrollbar { display: none; }
     .sub-filter-btn {
       font-family: var(--font-title);
       font-size: 13px;
@@ -27,7 +30,7 @@
       border: 2px solid var(--border);
       background: transparent;
       color: var(--text-dim);
-      border-radius: 20px;
+      border-radius: 4px;
       cursor: pointer;
       transition: all .15s;
     }
