@@ -1078,3 +1078,19 @@ body::before {
   letter-spacing: 1px;
   margin-top: 4px;
 }
+
+/* ── OFFER BANNER ── */
+.offer-banner {
+  display: none !important;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  border-top: 2px solid var(--accent2);
+  border-bottom: 2px solid var(--accent2);
+  position: relative;
+  overflow: hidden;
+}
+.offer-banner.visible {
+  display: flex !important;
+}
