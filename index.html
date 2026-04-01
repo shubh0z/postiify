@@ -38,53 +38,9 @@
       border-color: var(--accent2);
     }
 
-    /* offer-banner styles moved to style.css */
-    @keyframes offerSlideIn {
-      from { opacity: 0; transform: translateY(-6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .offer-banner::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 60px,
-        rgba(255,214,0,0.03) 60px,
-        rgba(255,214,0,0.03) 61px
-      );
-      pointer-events: none;
-    }
-    .offer-icon {
-      font-size: 24px;
-      flex-shrink: 0;
-      animation: offerBounce 1.8s ease-in-out infinite;
-    }
-    @keyframes offerBounce {
-      0%, 100% { transform: scale(1); }
-      50%       { transform: scale(1.18); }
-    }
-    .offer-text-wrap { flex: 1; min-width: 0; }
-    .offer-main-text {
-      font-family: var(--font-title);
-      font-size: 15px;
-      letter-spacing: 1.5px;
-      color: var(--accent2);
-      text-shadow: 0 0 10px rgba(255,214,0,0.4);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .offer-sub-text {
-      font-family: var(--font-body);
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+
+    /* offer banner styles are in style.css */
+
     .offer-tag {
       font-family: var(--font-title);
       font-size: 11px;
@@ -407,7 +363,7 @@
   <script src="products-figures.js"></script>
   <script src="products-polaroids.js"></script>
   <script src="products-frames.js"></script>
-  <script src="products-offers.js"></script>
+  <!-- products-offers.js removed — OFFERS now inside script.js -->
 
   <!-- MAIN SCRIPT (always load LAST) -->
   <script src="script.js"></script>
