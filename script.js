@@ -782,3 +782,4 @@ document.addEventListener("DOMContentLoaded", function() {
 function handleLbOverlayClick(e) {
   if (e.target === document.getElementById("lightbox")) closeLightbox();
 }
+
