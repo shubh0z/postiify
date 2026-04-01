@@ -13,20 +13,20 @@ const OFFERS = [
     icon: "🎁",
     text: "Buy 8 Posters → Get 2 FREE!",
     sub: "Order 8 and pick any 2 extra posters absolutely free 🔥",
-    active: true,
+    active: false,
   },
   {
     type: "frame",
     icon: "💸",
-    text: "Buy 2 Frames → Get ₹50 OFF!",
-    sub: "Save ₹50 instantly when you order any 2 frames together",
+    text: "Buy 3+ Frames → Get ₹49 OFF!",
+    sub: "3+ frames = ₹49 off instantly 🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
     active: true,
   },
   {
     type: "polaroid",
     icon: "🚚",
-    text: "Order 3 Sets → FREE Delivery!",
-    sub: "No delivery charges when you order 3 or more polaroid sets",
+    text: "Order 3+ Sets → FREE Delivery!",
+    sub: "3+ sets = FREE delivery 🎉\n", //1-2 sets = delivery charge applicable (DM for details)",
     active: true,
   },
 ];
@@ -373,7 +373,8 @@ function showOfferBanner(type) {
     document.getElementById("offerIcon").textContent = offer.icon;
     document.getElementById("offerMainText").textContent = offer.text;
     var subEl = document.getElementById("offerSubText");
-    subEl.textContent = offer.sub || "";
+    var subHtml = (offer.sub || "").replace(/\n/g, "<br>");
+    subEl.innerHTML = subHtml;
     subEl.style.display = offer.sub ? "block" : "none";
     banner.style.display = "flex";
   } else {
@@ -552,25 +553,41 @@ function calcAppliedOffers() {
     }
 
     if (offer.type === "frame") {
-      // Buy 2 frames → ₹50 off
-      if (qtyOfType >= 2) {
+      if (qtyOfType >= 3) {
+        // 3+ frames → ₹49 off
         applied.push({
           icon: "💸",
-          label: "Buy 2 Frames → ₹50 OFF!",
-          discount: 50,
+          label: "3+ Frames → ₹49 OFF!",
+          discount: 49,
           note: ""
+        });
+      } else if (qtyOfType >= 1) {
+        // 1-2 frames → delivery charge (DM)
+        applied.push({
+          icon: "🚚",
+          label: "Delivery charge applicable (DM for details)",
+          discount: 0,
+          note: "DELIVERY CHARGE"
         });
       }
     }
 
     if (offer.type === "polaroid") {
-      // 3 sets → free delivery
       if (qtyOfType >= 3) {
+        // 3+ sets → free delivery
         applied.push({
           icon: "🚚",
-          label: "3 Polaroid Sets → Free Delivery!",
+          label: "3+ Polaroid Sets → Free Delivery!",
           discount: 0,
           note: "FREE DELIVERY"
+        });
+      } else if (qtyOfType >= 1) {
+        // 1-2 sets → delivery charge (DM)
+        applied.push({
+          icon: "🚚",
+          label: "Delivery charge applicable (DM for details)",
+          discount: 0,
+          note: "DELIVERY CHARGE"
         });
       }
     }
@@ -624,7 +641,7 @@ function updateCartUI() {
       container.innerHTML +=
         '<div class="cart-offer-row">' +
           '<span>' + o.icon + ' ' + o.label + '</span>' +
-          '<span>' + (o.discount > 0 ? '−₹' + o.discount : '<span class="offer-free-tag">' + o.note + '</span>') + '</span>' +
+          '<span>' + (o.discount > 0 ? '−₹' + o.discount : '<span class="offer-free-tag" style="' + (o.note === 'DELIVERY CHARGE' ? 'background:#ffaa00;' : '') + '">' + o.note + '</span>') + '</span>' +
         '</div>';
     });
   }
@@ -670,7 +687,7 @@ function orderOnInstagram() {
   var offerLines = "";
   if (appliedOffers.length > 0) {
     offerLines = "\n\n🎉 OFFERS APPLIED:\n" + appliedOffers.map(function(o) {
-      return o.icon + " " + o.label + (o.discount > 0 ? " (−₹" + o.discount + ")" : " (" + o.note + ")");
+      return o.icon + " " + o.label + (o.discount > 0 ? " (−₹" + o.discount + ")" : o.note === "DELIVERY CHARGE" ? " ⚠️ Please confirm delivery charge in DM" : " (" + o.note + ")");
     }).join("\n");
   }
 
