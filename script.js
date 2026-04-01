@@ -16,10 +16,10 @@ const OFFERS = [
     active: false,
   },
   {
-    type: "frame",
+    type: "frame",  
     icon: "💸",
     text: "Buy 3+ Frames → Get ₹49 OFF!",
-    sub: "3+ frames = ₹49 off instantly 🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
+    sub: "3+ frames = ₹49 off with free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
     active: true,
   },
   {
