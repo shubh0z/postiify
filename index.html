@@ -38,20 +38,7 @@
       border-color: var(--accent2);
     }
 
-    /* ── OFFER BANNER ── */
-    .offer-banner {
-      display: none;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 20px;
-      background: linear-gradient(90deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
-      border-top: 2px solid var(--accent2);
-      border-bottom: 2px solid var(--accent2);
-      position: relative;
-      overflow: hidden;
-      animation: offerSlideIn 0.3s ease;
-    }
-    .offer-banner.visible { display: flex; }
+    /* offer-banner styles moved to style.css */
     @keyframes offerSlideIn {
       from { opacity: 0; transform: translateY(-6px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -416,11 +403,11 @@
   </footer>
 
   <!-- ✅ PRODUCT FILES — load order matters! -->
-  <script src="products-offers.js"></script>
   <script src="products-posters.js"></script>
   <script src="products-figures.js"></script>
   <script src="products-polaroids.js"></script>
   <script src="products-frames.js"></script>
+  <script src="products-offers.js"></script>
 
   <!-- MAIN SCRIPT (always load LAST) -->
   <script src="script.js"></script>
