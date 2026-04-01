@@ -353,8 +353,10 @@ function showOfferBanner(type) {
     var subEl = document.getElementById("offerSubText");
     subEl.textContent = offer.sub || "";
     subEl.style.display = offer.sub ? "block" : "none";
+    banner.style.display = "flex";
     banner.classList.add("visible");
   } else {
+    banner.style.display = "none";
     banner.classList.remove("visible");
   }
 }
@@ -782,4 +784,3 @@ document.addEventListener("DOMContentLoaded", function() {
 function handleLbOverlayClick(e) {
   if (e.target === document.getElementById("lightbox")) closeLightbox();
 }
-
