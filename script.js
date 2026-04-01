@@ -1,12 +1,35 @@
 // ============================================================
 //  postiiify – Main Script
-//  Products are loaded from separate files:
-//    - products-posters.js   (anime / cars / singers)
-//    - products-figures.js
-//    - products-polaroids.js
-//    - products-frames.js
-//    - products-custom.js
 // ============================================================
+
+// ============================================================
+//  OFFERS — seedha yahan edit karo!
+//  active: true  = banner dikhega
+//  active: false = band
+// ============================================================
+const OFFERS = [
+  {
+    type: "poster",
+    icon: "🎁",
+    text: "Buy 8 Posters → Get 2 FREE!",
+    sub: "Order 8 and pick any 2 extra posters absolutely free 🔥",
+    active: true,
+  },
+  {
+    type: "frame",
+    icon: "💸",
+    text: "Buy 2 Frames → Get ₹50 OFF!",
+    sub: "Save ₹50 instantly when you order any 2 frames together",
+    active: true,
+  },
+  {
+    type: "polaroid",
+    icon: "🚚",
+    text: "Order 3 Sets → FREE Delivery!",
+    sub: "No delivery charges when you order 3 or more polaroid sets",
+    active: true,
+  },
+];
 
 // Merge all product arrays into one master list
 const PRODUCTS = [
@@ -344,8 +367,7 @@ function showOfferBanner(type) {
   var banner = document.getElementById("offerBanner");
   if (!banner) return;
 
-  var offers = (typeof OFFERS !== "undefined") ? OFFERS : [];
-  var offer = offers.find(function(o) { return o.type === type && o.active; });
+  var offer = OFFERS.find(function(o) { return o.type === type && o.active; });
 
   if (offer) {
     document.getElementById("offerIcon").textContent = offer.icon;
@@ -354,10 +376,8 @@ function showOfferBanner(type) {
     subEl.textContent = offer.sub || "";
     subEl.style.display = offer.sub ? "block" : "none";
     banner.style.display = "flex";
-    banner.classList.add("visible");
   } else {
     banner.style.display = "none";
-    banner.classList.remove("visible");
   }
 }
 
@@ -502,10 +522,9 @@ function changeQty(id, delta) {
 //  CALCULATE APPLIED OFFERS FROM CART
 // ============================================================
 function calcAppliedOffers() {
-  var offers = (typeof OFFERS !== "undefined") ? OFFERS : [];
   var applied = [];
 
-  offers.forEach(function(offer) {
+  OFFERS.forEach(function(offer) {
     if (!offer.active) return;
 
     // Count total qty of this type in cart
