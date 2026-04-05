@@ -14,3 +14,4 @@
 const PRODUCTS_FIGURES = [
   // Coming soon — figures will be added here soon!
 ];
+
