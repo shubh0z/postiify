@@ -14,7 +14,7 @@
 const PRODUCTS_POLAROIDS = [
 
   {
-    id: 501,
+    id: 1,
     name: "Polaroid Pack",
     series: "Any Design · Set of 24 pcs",
     price: 149,
