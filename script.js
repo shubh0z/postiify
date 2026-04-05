@@ -55,6 +55,7 @@ let currentSubFilter = "all"; // for poster sub-tabs: all | anime | cars | singe
 let currentKeychainSubFilter = "all"; // for keychain sub-tabs: all | minecraft | batman
 let currentSearch = "";
 let holdTimer = null;
+let shuffleOrder = null; // null = original order
 const HOLD_MS = 500;
 let lbImgs = [];
 let lbIndex = 0;
@@ -91,7 +92,10 @@ function renderProducts(filter, search, page) {
   if (page) currentPage = page;
 
   var grid = document.getElementById("productGrid");
-  var filtered = PRODUCTS.filter(function(p) {
+  // Apply shuffle order if active
+  var sourceList = (shuffleOrder && filter === currentFilter) ? shuffleOrder : PRODUCTS;
+
+  var filtered = sourceList.filter(function(p) {
     var typeMatch = filter === "all" || p.type === filter;
     var subMatch = true;
     if (filter === "poster" && currentSubFilter !== "all") {
@@ -393,6 +397,7 @@ function showOfferBanner(type) {
 // ============================================================
 function filterProducts(type, el) {
   currentFilter = type;
+  shuffleOrder = null;
   if (type !== "poster") currentSubFilter = "all";
   if (type !== "keychain") currentKeychainSubFilter = "all";
 
@@ -431,6 +436,7 @@ function filterProducts(type, el) {
     if (searchWrap) searchWrap.style.display = "";
     if (subBar) subBar.style.display = (type === "poster") ? "flex" : "none";
     if (keychainSubBar) keychainSubBar.style.display = (type === "keychain") ? "flex" : "none";
+
     currentPage = 1;
     renderProducts(type, currentSearch);
   }
@@ -832,14 +838,54 @@ function showToast(msg) {
 }
 
 // ============================================================
+//  SHUFFLE POSTERS
+// ============================================================
+function shuffleAll() {
+  // Get current tab's products
+  var typeItems = PRODUCTS.filter(function(p) { return p.type === currentFilter; });
+  var others = PRODUCTS.filter(function(p) { return p.type !== currentFilter; });
+
+  // Fisher-Yates shuffle
+  for (var i = typeItems.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = typeItems[i]; typeItems[i] = typeItems[j]; typeItems[j] = tmp;
+  }
+  shuffleOrder = typeItems.concat(others);
+  currentPage = 1;
+
+  // Simple flash animation
+  var btn = document.getElementById("shuffleBtn");
+  if (btn) {
+    btn.classList.add("shuffled");
+    btn.textContent = "✅";
+    setTimeout(function() {
+      btn.classList.remove("shuffled");
+      btn.textContent = "🔀";
+    }, 600);
+  }
+  renderProducts(currentFilter, currentSearch);
+}
+
+// ============================================================
 //  INIT
 // ============================================================
 document.addEventListener("DOMContentLoaded", function() {
-  renderProducts("poster", "");
+  // Auto-shuffle all products on page load
+  autoShuffleAll();
+
   var subBar = document.getElementById("posterSubBar");
   if (subBar) subBar.style.display = "flex";
   showOfferBanner("poster");
 });
+
+function autoShuffleAll() {
+  // Shuffle entire PRODUCTS array in place (Fisher-Yates)
+  for (var i = PRODUCTS.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = PRODUCTS[i]; PRODUCTS[i] = PRODUCTS[j]; PRODUCTS[j] = tmp;
+  }
+  renderProducts("poster", "");
+}
 
 function handleLbOverlayClick(e) {
   if (e.target === document.getElementById("lightbox")) closeLightbox();
