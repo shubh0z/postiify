@@ -14,7 +14,7 @@
 const PRODUCTS_FRAMES = [
 
   {
-    id: 601,
+    id: 101,
     name: "Black Frame - with custom posters",
     series: "Size · A4",
     price: 249,
@@ -25,7 +25,7 @@ const PRODUCTS_FRAMES = [
     imgs: ["frames/black.PNG"],
   },
   {
-    id: 602,
+    id: 102,
     name: "White Frame - with custom posters",
     series: "Size · A4",
     price: 249,
