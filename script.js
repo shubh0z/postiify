@@ -38,6 +38,7 @@ const PRODUCTS = [
   ...(typeof PRODUCTS_POLAROIDS  !== "undefined" ? PRODUCTS_POLAROIDS  : []),
   ...(typeof PRODUCTS_FRAMES     !== "undefined" ? PRODUCTS_FRAMES     : []),
   ...(typeof PRODUCTS_CUSTOM     !== "undefined" ? PRODUCTS_CUSTOM     : []),
+  ...(typeof PRODUCTS_KEYCHAINS  !== "undefined" ? PRODUCTS_KEYCHAINS  : []),
 ];
 
 // ============================================================
@@ -51,6 +52,7 @@ const IG_DM_URL = "https://www.instagram.com/direct/t/18063073595391388/";
 let cart = [];
 let currentFilter = "poster";
 let currentSubFilter = "all"; // for poster sub-tabs: all | anime | cars | singers
+let currentKeychainSubFilter = "all"; // for keychain sub-tabs: all | minecraft | batman
 let currentSearch = "";
 let holdTimer = null;
 const HOLD_MS = 500;
@@ -68,6 +70,7 @@ function badgeLabel(type) {
     figure:       "FIGURE",
     polaroid:     "POLAROID",
     frame:        "FRAME",
+    keychain:     "KEYCHAIN",
     customizable: "CUSTOM",
   };
   return map[type] || type.toUpperCase();
@@ -94,6 +97,9 @@ function renderProducts(filter, search, page) {
     if (filter === "poster" && currentSubFilter !== "all") {
       subMatch = p.subtype === currentSubFilter;
     }
+    if (filter === "keychain" && currentKeychainSubFilter !== "all") {
+      subMatch = p.subtype === currentKeychainSubFilter;
+    }
     var searchMatch = !search ||
       p.name.toLowerCase().includes(search) ||
       p.series.toLowerCase().includes(search) ||
@@ -106,6 +112,12 @@ function renderProducts(filter, search, page) {
   var subBar = document.getElementById("posterSubBar");
   if (subBar) {
     subBar.style.display = (filter === "poster") ? "flex" : "none";
+  }
+
+  // Show/hide keychain sub-tabs
+  var keychainSubBar = document.getElementById("keychainSubBar");
+  if (keychainSubBar) {
+    keychainSubBar.style.display = (filter === "keychain") ? "flex" : "none";
   }
 
   if (filtered.length === 0) {
@@ -123,20 +135,15 @@ function renderProducts(filter, search, page) {
   grid.innerHTML = pageItems.map(function(p) {
     var hasImgs = p.imgs && p.imgs.length > 0;
     var firstImg = hasImgs ? p.imgs[0] : "";
-    var multiHint = hasImgs
-      ? (p.imgs.length > 1
-          ? '<div class="multi-hint">👁 ' + p.imgs.length + ' photos · hold</div>'
-          : '<div class="multi-hint">👁 hold to preview</div>')
+    var multiHint = (hasImgs && p.imgs.length > 1)
+      ? '<div class="multi-hint">👁 ' + p.imgs.length + ' photos</div>'
       : "";
 
     return (
       '<div class="product-card" data-type="' + p.type + '" data-id="' + p.id + '">' +
         '<div class="product-img-wrap" ' +
-          'onpointerdown="startHold(event,' + p.id + ')" ' +
-          'onpointerup="cancelHold()" ' +
-          'onpointercancel="cancelHold()" ' +
-          'onpointerleave="cancelHold()" ' +
-          'oncontextmenu="return false">' +
+          'onclick="openLightbox(' + p.id + ')" ' +
+          'oncontextmenu="return false" style="cursor:pointer">' +
           (firstImg
             ? '<img class="product-img" src="' + firstImg + '" alt="' + p.name + '" loading="lazy" draggable="false" />'
             : '<div class="product-img-placeholder">' + p.emoji + '</div>'
@@ -144,7 +151,6 @@ function renderProducts(filter, search, page) {
           '<span class="badge-type">' + badgeLabel(p.type) + '</span>' +
           (!p.inStock ? '<div class="badge-sold">SOLD OUT</div>' : "") +
           multiHint +
-          '<div class="hold-ring" id="ring-' + p.id + '"></div>' +
         '</div>' +
         '<div class="product-info">' +
           '<div class="product-name">' + p.name + '</div>' +
@@ -388,6 +394,7 @@ function showOfferBanner(type) {
 function filterProducts(type, el) {
   currentFilter = type;
   if (type !== "poster") currentSubFilter = "all";
+  if (type !== "keychain") currentKeychainSubFilter = "all";
 
   document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
   el.classList.add("active");
@@ -401,6 +408,7 @@ function filterProducts(type, el) {
   var comingSoonPage = document.getElementById("comingSoonPage");
   var searchWrap = document.querySelector(".search-bar-wrap");
   var subBar = document.getElementById("posterSubBar");
+  var keychainSubBar = document.getElementById("keychainSubBar");
 
   if (type === "customizable") {
     grid.style.display = "none";
@@ -408,17 +416,21 @@ function filterProducts(type, el) {
     if (comingSoonPage) comingSoonPage.style.display = "none";
     if (searchWrap) searchWrap.style.display = "none";
     if (subBar) subBar.style.display = "none";
+    if (keychainSubBar) keychainSubBar.style.display = "none";
   } else if (type === "figure") {
     grid.style.display = "none";
     if (customPage) customPage.style.display = "none";
     if (comingSoonPage) comingSoonPage.style.display = "flex";
     if (searchWrap) searchWrap.style.display = "none";
     if (subBar) subBar.style.display = "none";
+    if (keychainSubBar) keychainSubBar.style.display = "none";
   } else {
     grid.style.display = "";
     if (customPage) customPage.style.display = "none";
     if (comingSoonPage) comingSoonPage.style.display = "none";
     if (searchWrap) searchWrap.style.display = "";
+    if (subBar) subBar.style.display = (type === "poster") ? "flex" : "none";
+    if (keychainSubBar) keychainSubBar.style.display = (type === "keychain") ? "flex" : "none";
     currentPage = 1;
     renderProducts(type, currentSearch);
   }
@@ -430,10 +442,22 @@ function filterProducts(type, el) {
 function filterPostersBy(subtype, el) {
   currentSubFilter = subtype;
   currentPage = 1;
-  document.querySelectorAll(".sub-filter-btn").forEach(function(b) { b.classList.remove("active"); });
+  document.querySelectorAll("#posterSubBar .sub-filter-btn").forEach(function(b) { b.classList.remove("active"); });
   el.classList.add("active");
   scrollTabToCenter(el);
   renderProducts("poster", currentSearch);
+}
+
+// ============================================================
+//  KEYCHAIN SUB-FILTER (ALL / MINECRAFT / BATMAN)
+// ============================================================
+function filterKeychainsBy(subtype, el) {
+  currentKeychainSubFilter = subtype;
+  currentPage = 1;
+  document.querySelectorAll("#keychainSubBar .sub-filter-btn").forEach(function(b) { b.classList.remove("active"); });
+  el.classList.add("active");
+  scrollTabToCenter(el);
+  renderProducts("keychain", currentSearch);
 }
 
 // ============================================================
