@@ -42,6 +42,20 @@
     }
 
 
+    /* ── KEYCHAIN SUB-FILTER BAR ── */
+    .keychain-sub-bar {
+      display: none;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      gap: 8px;
+      padding: 8px 16px 12px;
+      background: var(--panel);
+      border-bottom: 2px solid var(--border);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .keychain-sub-bar::-webkit-scrollbar { display: none; }
+
     /* offer banner styles are in style.css */
 
     .offer-tag {
@@ -223,6 +237,7 @@
       <button class="filter-btn" onclick="filterProducts('figure', this)">FIGURES</button>
       <button class="filter-btn" onclick="filterProducts('polaroid', this)">POLAROID</button>
       <button class="filter-btn" onclick="filterProducts('frame', this)">FRAMES</button>
+      <button class="filter-btn" onclick="filterProducts('keychain', this)">KEYCHAINS</button>
       <button class="filter-btn" onclick="filterProducts('customizable', this)">CUSTOM ✏️</button>
     </div>
   </div>
@@ -236,6 +251,13 @@
     <button class="sub-filter-btn" onclick="filterPostersBy('god', this)">🛐 GOD</button>
       <button class="sub-filter-btn" onclick="filterPostersBy('cricketer', this)">🏏 CRICKETER</button>
     <button class="sub-filter-btn" onclick="filterPostersBy('singers', this)">🎤 SINGERS</button>
+  </div>
+
+  <!-- KEYCHAIN SUB-FILTER TABS (visible only when KEYCHAINS is active) -->
+  <div class="keychain-sub-bar" id="keychainSubBar">
+    <button class="sub-filter-btn active" onclick="filterKeychainsBy('all', this)">ALL KEYCHAINS</button>
+    <button class="sub-filter-btn" onclick="filterKeychainsBy('minecraft', this)">⛏️ MINECRAFT</button>
+    <button class="sub-filter-btn" onclick="filterKeychainsBy('batman', this)">🦇 BATMAN</button>
   </div>
 
   <!-- OFFER BANNER (shown only when an active offer exists for the current tab) -->
@@ -369,6 +391,7 @@
   <script src="products-figures.js"></script>
   <script src="products-polaroids.js"></script>
   <script src="products-frames.js"></script>
+  <script src="products-keychains.js"></script>
   <!-- products-offers.js removed — OFFERS now inside script.js -->
 
   <!-- MAIN SCRIPT (always load LAST) -->
