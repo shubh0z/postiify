@@ -422,13 +422,6 @@ function filterProducts(type, el) {
     if (searchWrap) searchWrap.style.display = "none";
     if (subBar) subBar.style.display = "none";
     if (keychainSubBar) keychainSubBar.style.display = "none";
-  } else if (type === "figure") {
-    grid.style.display = "none";
-    if (customPage) customPage.style.display = "none";
-    if (comingSoonPage) comingSoonPage.style.display = "flex";
-    if (searchWrap) searchWrap.style.display = "none";
-    if (subBar) subBar.style.display = "none";
-    if (keychainSubBar) keychainSubBar.style.display = "none";
   } else {
     grid.style.display = "";
     if (customPage) customPage.style.display = "none";
