@@ -43,16 +43,6 @@ const PRODUCTS_FIGURES = [
     imgs: ['anime_figures/Giyu Tomioka 15cm  (1photo).jpg', 'anime_figures/Giyu Tomioka 15cm  (2photo).jpg'],
   },
   {
-    id: 1505,
-    name: "Gohan Absorbed",
-    series: "Dragon Ball",
-    price: 349,
-    type: "figure",
-    inStock: true,
-    emoji: "🧸",
-    imgs: ['anime_figures/Gohan absorbed (7photo).jpg'],
-  },
-  {
     id: 1506,
     name: "Goku 28cm",
     series: "Dragon Ball",
@@ -170,6 +160,6 @@ const PRODUCTS_FIGURES = [
     type: "figure",
     inStock: true,
     emoji: "🧸",
-    imgs: ['anime_figures/8 majin buu (1photo).jpg', 'anime_figures/Ebil Buu (4photo).jpg', 'anime_figures/Kid Buu (3photo).jpg', 'anime_figures/Majin Buu (2photo).jpg', 'anime_figures/second kid buu form (6).jpg', 'anime_figures/Supper Buu (5photo).jpg','anime_figures/Bandai hg (8photo).jpg','anime_figures/vs ultimate gohan (9photo).jpg'],
+    imgs: ['anime_figures/8 majin buu (1photo).jpg', 'anime_figures/Ebil Buu (4photo).jpg', 'anime_figures/Kid Buu (3photo).jpg', 'anime_figures/Majin Buu (2photo).jpg', 'anime_figures/second kid buu form (6).jpg', 'anime_figures/Supper Buu (5photo).jpg','anime_figures/Bandai hg (8photo).jpg','anime_figures/vs ultimate gohan (9photo).jpg','anime_figures/Gohan absorbed (7photo).jpg'],
   },
 ];
