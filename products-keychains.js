@@ -23,7 +23,7 @@ const PRODUCTS_KEYCHAINS = [
     price: 149,
     type: "keychain",
     subtype: "minecraft",
-    inStock: true,
+    inStock: false,
     emoji: "💚",
     imgs: ["keychain/steve.jpg"],
   },
