@@ -39,7 +39,7 @@ const OFFERS = [
   {
     type: "keychain",
     icon: "💸",
-    text: "Price Drop! Keychains",
+    text: "Price Drop! Limited Offer",
     sub: "All keychains now at ₹119! 🎉",
     active: true,
   },
