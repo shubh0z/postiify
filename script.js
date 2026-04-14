@@ -10,10 +10,10 @@
 const OFFERS = [
   {
     type: "poster",
-    icon: "🎁",
-    text: "Buy 8 Posters → Get 2 FREE!",
-    sub: "Order 8 and pick any 2 extra posters absolutely free 🔥",
-    active: false,
+    icon: "💸",
+    text: "Price Drop! Limited Offer",
+    sub: "All posters now at ₹44 — grab them before it's gone! 🔥",
+    active: true,
   },
   {
     type: "frame",  
@@ -27,6 +27,20 @@ const OFFERS = [
     icon: "🚚",
     text: "Order 3 Sets → FREE Delivery!",
     sub: "3 sets = FREE delivery 🎉\n", //1-2 sets = delivery charge applicable (DM for details)",
+    active: true,
+  },
+  {
+    type: "figure",
+    icon: "🚚",
+    text: "Order 2 Figures → FREE Delivery!",
+    sub: "2 figures = FREE delivery! 🎉",
+    active: true,
+  },
+  {
+    type: "keychain",
+    icon: "💸",
+    text: "Price Drop! Keychains",
+    sub: "All keychains now at ₹119! 🎉",
     active: true,
   },
 ];
@@ -159,7 +173,7 @@ function renderProducts(filter, search, page) {
         '<div class="product-info">' +
           '<div class="product-name">' + p.name + '</div>' +
           '<div class="product-series">' + p.series + '</div>' +
-          '<div class="product-price">₹' + p.price + '</div>' +
+          '<div class="product-price">' + (p.oldPrice ? '<s>₹' + p.oldPrice + '</s> ' : '') + '₹' + p.price + '</div>' +
           '<button class="add-btn" id="btn-' + p.id + '" onclick="addToCart(' + p.id + ')" ' +
             (!p.inStock ? "disabled" : "") + '>' +
             (!p.inStock ? "SOLD OUT" : "+ ADD TO CART") +
@@ -265,7 +279,7 @@ function openLightbox(productId) {
   var lb = document.getElementById("lightbox");
   lb.querySelector(".lb-title").textContent = product.name;
   lb.querySelector(".lb-series").textContent = product.series;
-  lb.querySelector(".lb-price").textContent = "₹" + product.price;
+  lb.querySelector(".lb-price").innerHTML = (product.oldPrice ? "<s>₹" + product.oldPrice + "</s> " : "") + "₹" + product.price;
 
   renderLbSlide();
   renderLbDots();
@@ -611,6 +625,17 @@ function calcAppliedOffers() {
           label: "Delivery charge applicable (DM for details)",
           discount: 0,
           note: "DELIVERY CHARGE"
+        });
+      }
+    }
+
+    if (offer.type === "figure") {
+      if (qtyOfType >= 2) {
+        applied.push({
+          icon: "🚚",
+          label: "2+ Figures → Free Delivery!",
+          discount: 0,
+          note: "FREE DELIVERY"
         });
       }
     }
