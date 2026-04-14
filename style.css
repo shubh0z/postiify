@@ -309,6 +309,10 @@ main {
   letter-spacing: 1px;
   margin-top: 2px;
 }
+.product-price s {
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
 
 .add-btn {
   margin-top: auto;
@@ -754,6 +758,10 @@ body::before {
   font-size: 26px;
   color: var(--accent2);
   letter-spacing: 1px;
+}
+.lb-price s {
+  color: var(--text-dim);
+  text-decoration: line-through;
 }
 
 /* ===== SEARCH BAR ===== */
