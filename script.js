@@ -11,7 +11,7 @@ const OFFERS = [
   {
     type: "poster",
     icon: "💸",
-    text: "Price Drop! Limited Offer",
+    text: "Price Drop!",
     sub: "All posters now at ₹44 — grab them before it's gone! 🔥",
     active: true,
   },
@@ -19,21 +19,21 @@ const OFFERS = [
     type: "frame",  
     icon: "💸",
     text: "Buy 3 Frames → Get ₹49 OFF!",
-    sub: "3 frames = ₹49 off with free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
+    sub: "3 frames = free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
     active: true,
   },
   {
     type: "polaroid",
     icon: "🚚",
     text: "Order 3 Sets → FREE Delivery!",
-    sub: "3 sets = FREE delivery 🎉\n", //1-2 sets = delivery charge applicable (DM for details)",
+    sub: "🎉\n", //1-2 sets = delivery charge applicable (DM for details)",
     active: true,
   },
   {
     type: "figure",
     icon: "🚚",
     text: "Order 2 Figures → FREE Delivery!",
-    sub: "2 figures = FREE delivery! 🎉",
+    sub: "",
     active: true,
   },
   {
@@ -326,7 +326,8 @@ function renderLbDots() {
 }
 
 function lbGoTo(idx) {
-  lbIndex = Math.max(0, Math.min(idx, lbImgs.length - 1));
+  if (lbImgs.length === 0) return;
+  lbIndex = ((idx % lbImgs.length) + lbImgs.length) % lbImgs.length; // infinite loop 🔄
   var track = document.getElementById("lbTrack");
   var slideW = track.parentElement.offsetWidth;
   track.scrollTo({ left: lbIndex * slideW, behavior: "smooth" });
@@ -347,9 +348,16 @@ function lbTrackScroll() {
   var slideW = track.parentElement.offsetWidth;
   var newIdx = Math.round(track.scrollLeft / slideW);
   if (newIdx !== lbIndex) {
-    lbIndex = newIdx;
-    renderLbDots();
-    updateLbCounter();
+    // If user scrolled past last slide (native scroll bounce), wrap to first
+    if (newIdx >= lbImgs.length) {
+      lbGoTo(0);
+    } else if (newIdx < 0) {
+      lbGoTo(lbImgs.length - 1);
+    } else {
+      lbIndex = newIdx;
+      renderLbDots();
+      updateLbCounter();
+    }
   }
 }
 
@@ -385,25 +393,35 @@ function scrollTabToCenter(btn) {
 }
 
 // ============================================================
-//  OFFER BANNER
+//  OFFER BANNER — saare active offers ek saath ticker mein
 // ============================================================
 function showOfferBanner(type) {
   var banner = document.getElementById("offerBanner");
   if (!banner) return;
 
-  var offer = OFFERS.find(function(o) { return o.type === type && o.active; });
+  // Sirf current tab ka offer dikhao
+  var activeOffers = OFFERS.filter(function(o) { return o.active && o.type === type; });
+  if (activeOffers.length === 0) { banner.style.display = "none"; return; }
 
-  if (offer) {
-    document.getElementById("offerIcon").textContent = offer.icon;
-    document.getElementById("offerMainText").textContent = offer.text;
-    var subEl = document.getElementById("offerSubText");
-    var subHtml = (offer.sub || "").replace(/\n/g, "<br>");
-    subEl.innerHTML = subHtml;
-    subEl.style.display = offer.sub ? "block" : "none";
-    banner.style.display = "flex";
-  } else {
-    banner.style.display = "none";
-  }
+  var tickerItems = activeOffers.map(function(o) {
+    return '<span class="offer-ticker-item">' +
+      o.icon + ' ' + o.text +
+      (o.sub ? ' — ' + o.sub.replace(/\n/g, ' ') : '') +
+    '</span>';
+  }).join('<span class="offer-ticker-sep">✦</span>');
+
+  var tickerContent = tickerItems;
+
+  banner.innerHTML =
+    '<span class="offer-icon">🔥</span>' +
+    '<div class="offer-ticker-wrap">' +
+      '<div class="offer-ticker" id="offerTicker">' +
+        tickerContent +
+      '</div>' +
+    '</div>' +
+    '<span class="offer-tag">OFFERS</span>';
+
+  banner.style.display = "flex";
 }
 
 // ============================================================
@@ -571,22 +589,7 @@ function calcAppliedOffers() {
       .reduce(function(s, i) { return s + i.qty; }, 0);
 
     if (offer.type === "poster") {
-      // Buy 8 → 2 free: discount = price of 2 cheapest posters in cart
-      if (qtyOfType >= 8) {
-        var posterPrices = [];
-        cart.filter(function(i) { return i.type === "poster"; })
-          .forEach(function(i) {
-            for (var q = 0; q < i.qty; q++) posterPrices.push(i.price);
-          });
-        posterPrices.sort(function(a, b) { return a - b; });
-        var freeVal = (posterPrices[0] || 0) + (posterPrices[1] || 0);
-        applied.push({
-          icon: "🎁",
-          label: "Buy 8 Posters → 2 FREE!",
-          discount: freeVal,
-          note: ""
-        });
-      }
+      // No active poster cart offer currently
     }
 
     if (offer.type === "frame") {
@@ -714,10 +717,153 @@ function toggleCart() {
 }
 
 // ============================================================
-//  ORDER ON INSTAGRAM
+//  ORDER ON INSTAGRAM — Step 1: Show Delivery Details Form
 // ============================================================
 function orderOnInstagram() {
   if (cart.length === 0) { showToast("Cart is empty!"); return; }
+  showDeliveryForm();
+}
+
+// ============================================================
+//  DELIVERY DETAILS FORM MODAL — postiiify boxy style
+// ============================================================
+var dfPayMode = "COD";
+var lastDeliveryInfo = null; // store for going back from order preview
+
+function showDeliveryForm(prefill) {
+  var existing = document.getElementById("deliveryFormModal");
+  if (existing) existing.remove();
+  if (!prefill) dfPayMode = "Online (UPI/GPay)";
+
+  var p = prefill || {};
+
+  var modal = document.createElement("div");
+  modal.id = "deliveryFormModal";
+  modal.className = "order-preview-overlay";
+  modal.innerHTML = [
+    '<div class="df-modal">',
+
+      // Header
+      '<div class="df-header">',
+        '<div>',
+          '<div class="df-step">Step 1 of 2</div>',
+          '<div class="df-title">Delivery details</div>',
+        '</div>',
+        '<button class="df-close-btn" onclick="closeDeliveryForm()">&#x2715;</button>',
+      '</div>',
+
+      // Body
+      '<div class="df-body">',
+
+        '<div class="df-row2">',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_name">Name</label>',
+            '<input class="df-input" id="df_name" type="text" placeholder="Rahul Sharma" autocomplete="name" value="' + (p.name||'') + '" />',
+          '</div>',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_phone">Phone</label>',
+            '<input class="df-input" id="df_phone" type="tel" placeholder="9876543210" autocomplete="tel" maxlength="10" value="' + (p.phone||'') + '" />',
+          '</div>',
+        '</div>',
+
+        '<div class="df-field">',
+          '<label class="df-label" for="df_address">Address</label>',
+          '<textarea class="df-input df-textarea" id="df_address" placeholder="House no., Street, Locality..." rows="2" autocomplete="street-address">' + (p.address||'') + '</textarea>',
+        '</div>',
+
+        '<div class="df-row2">',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_city">City</label>',
+            '<input class="df-input" id="df_city" type="text" placeholder="Delhi" autocomplete="address-level2" value="' + (p.city||'') + '" />',
+          '</div>',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_pin">Pincode</label>',
+            '<input class="df-input" id="df_pin" type="number" placeholder="110001" value="' + (p.pin||'') + '" />',
+          '</div>',
+        '</div>',
+
+        '<div class="df-field">',
+          '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">',
+            '<label class="df-label">Payment</label>',
+            '<div class="df-cod-warn" id="df_cod_warn" style="display:' + (prefill && p.payMode === 'COD' ? 'flex' : 'none') + '">',
+              '<span class="df-cod-warn-icon">!</span>',
+              '<span class="df-cod-warn-text">Partial payment required</span>',
+            '</div>',
+          '</div>',
+          '<div class="df-pay-toggle">',
+            '<button class="df-pay-btn' + (prefill && p.payMode === 'COD' ? ' df-pay-active' : '') + '" id="df_cod" onclick="dfSelectPay(\'COD\', this)">Cash on delivery</button>',
+            '<button class="df-pay-btn' + (!prefill || p.payMode !== 'COD' ? ' df-pay-active' : '') + '" id="df_online" onclick="dfSelectPay(\'Online (UPI/GPay)\', this)">Online / UPI</button>',
+          '</div>',
+        '</div>',
+
+      '</div>',
+
+      // Footer
+      '<div class="df-footer">',
+        '<button class="df-cancel-btn" onclick="closeDeliveryForm()">Cancel</button>',
+        '<button class="df-continue-btn" onclick="submitDeliveryForm()">Continue →</button>',
+      '</div>',
+
+    '</div>'
+  ].join("");
+
+  document.body.appendChild(modal);
+  setTimeout(function() { modal.classList.add("open"); }, 10);
+  if (!prefill) {
+    setTimeout(function() {
+      var el = document.getElementById("df_name");
+      if (el) el.focus();
+    }, 200);
+  }
+}
+
+function dfSelectPay(mode, btn) {
+  dfPayMode = mode;
+  document.querySelectorAll(".df-pay-btn").forEach(function(b) { b.classList.remove("df-pay-active"); });
+  btn.classList.add("df-pay-active");
+  var warn = document.getElementById("df_cod_warn");
+  if (warn) warn.style.display = (mode === "COD") ? "flex" : "none";
+}
+
+function closeDeliveryForm() {
+  var modal = document.getElementById("deliveryFormModal");
+  if (modal) {
+    modal.classList.remove("open");
+    setTimeout(function() { modal.remove(); }, 300);
+  }
+}
+
+function submitDeliveryForm() {
+  var name    = (document.getElementById("df_name").value || "").trim();
+  var phone   = (document.getElementById("df_phone").value || "").trim();
+  var address = (document.getElementById("df_address").value || "").trim();
+  var city    = (document.getElementById("df_city").value || "").trim();
+  var pin     = (document.getElementById("df_pin").value || "").trim();
+
+  if (!name)    { shakeField("df_name");    showToast("Name daalo!"); return; }
+  if (!phone || phone.length < 10) { shakeField("df_phone"); showToast("Valid phone daalo!"); return; }
+  if (!address) { shakeField("df_address"); showToast("Address daalo!"); return; }
+  if (!city)    { shakeField("df_city");    showToast("City daalo!"); return; }
+  if (!pin || pin.length < 6) { shakeField("df_pin"); showToast("Valid pincode daalo!"); return; }
+
+  var deliveryInfo = { name: name, phone: phone, address: address, city: city, pin: pin, payMode: dfPayMode };
+  closeDeliveryForm();
+  setTimeout(function() { buildAndShowOrder(deliveryInfo); }, 350);
+}
+
+function shakeField(id) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("df-shake");
+  el.focus();
+  setTimeout(function() { el.classList.remove("df-shake"); }, 500);
+}
+
+// ============================================================
+//  BUILD ORDER MESSAGE (with delivery details)
+// ============================================================
+function buildAndShowOrder(delivery) {
+  lastDeliveryInfo = delivery; // save for going back
 
   var itemsList = cart.map(function(item, i) {
     var line = (i + 1) + ". " + item.name + " (" + item.series + ")";
@@ -726,11 +872,11 @@ function orderOnInstagram() {
     return line;
   }).join("\n");
 
-  var totalQty = cart.reduce(function(s, i) { return s + i.qty; }, 0);
-  var subtotal = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
-  var appliedOffers = calcAppliedOffers();
-  var totalDiscount = appliedOffers.reduce(function(s, o) { return s + o.discount; }, 0);
-  var finalTotal = Math.max(0, subtotal - totalDiscount);
+  var totalQty  = cart.reduce(function(s, i) { return s + i.qty; }, 0);
+  var subtotal  = cart.reduce(function(sum, item) { return sum + item.price * item.qty; }, 0);
+  var appliedOffers  = calcAppliedOffers();
+  var totalDiscount  = appliedOffers.reduce(function(s, o) { return s + o.discount; }, 0);
+  var finalTotal     = Math.max(0, subtotal - totalDiscount);
 
   var offerLines = "";
   if (appliedOffers.length > 0) {
@@ -739,20 +885,24 @@ function orderOnInstagram() {
     }).join("\n");
   }
 
-  var message = "🛒 Order from postiiify website!\n\n" +
+  var message =
+    "🛒 Order from postiiify website!\n\n" +
     itemsList +
     offerLines +
     "\n\n──────────────────\n" +
     "Items: " + totalQty + "  |  Total: ₹" + finalTotal +
-    (totalDiscount > 0 ? "  (saved ₹" + totalDiscount + "! 🎉)" : "");
+    (totalDiscount > 0 ? "  (saved ₹" + totalDiscount + "! 🎉)" : "") +
+    "\n\n📦 DELIVERY DETAILS:\n" +
+    "👤 Name    : " + delivery.name + "\n" +
+    "📱 Phone   : " + delivery.phone + "\n" +
+    "🏠 Address : " + delivery.address + "\n" +
+    "🏙️ City    : " + delivery.city + "\n" +
+    "📮 Pincode : " + delivery.pin + "\n" +
+    "💳 Payment : " + delivery.payMode;
 
-  var copied = false;
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(message).then(function() {
-      copied = true;
-    }).catch(function() {});
+    navigator.clipboard.writeText(message).catch(function() {});
   }
-
   try { sessionStorage.setItem("postiify_order", message); } catch(e) {}
 
   showOrderPreview(message);
@@ -780,6 +930,18 @@ function showOrderPreview(message) {
         '<span>📋 YOUR ORDER MESSAGE</span>',
         '<button onclick="closeOrderPreview()">✕</button>',
       '</div>',
+      '<div class="op-step-bar">',
+        '<button class="op-step-item op-step-done op-step-clickable" onclick="goBackToDeliveryForm()" title="Edit delivery details">',
+          '<span class="op-step-num">&#10003;</span>',
+          '<span class="op-step-lbl">Delivery details</span>',
+          '<span class="op-step-edit">&#9998; edit</span>',
+        '</button>',
+        '<div class="op-step-arrow">&#8250;</div>',
+        '<div class="op-step-item op-step-active">',
+          '<span class="op-step-num">2</span>',
+          '<span class="op-step-lbl">Order message</span>',
+        '</div>',
+      '</div>',
       '<div class="order-preview-body">',
         '<p class="order-preview-hint">' + hint + '</p>',
         '<pre class="order-preview-text" id="orderMsgText">' + message.replace(/</g, "&lt;").replace(/>/g, "&gt;") + '</pre>',
@@ -793,6 +955,13 @@ function showOrderPreview(message) {
 
   document.body.appendChild(popup);
   setTimeout(function() { popup.classList.add("open"); }, 10);
+}
+
+function goBackToDeliveryForm() {
+  closeOrderPreview();
+  setTimeout(function() {
+    showDeliveryForm(lastDeliveryInfo);
+  }, 320);
 }
 
 function closeOrderPreview() {
