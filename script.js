@@ -815,16 +815,29 @@ function showDeliveryForm(prefill) {
   document.body.appendChild(modal);
   setTimeout(function() { modal.classList.add("open"); }, 10);
 
-  // Mobile: keyboard pe field hide na ho — focus hone par scroll karo
+  // Mobile keyboard fix: jab keyboard khule, modal ki height adjust karo
+  var dfModal = modal.querySelector(".df-modal");
+  function adjustForKeyboard() {
+    if (!document.getElementById("deliveryFormModal")) return;
+    var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    if (dfModal) dfModal.style.maxHeight = (vh * 0.95) + "px";
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", adjustForKeyboard);
+    window.visualViewport.addEventListener("scroll", adjustForKeyboard);
+  }
+  adjustForKeyboard();
+
+  // Focus hone par field scroll into view
   setTimeout(function() {
     var body = modal.querySelector(".df-body");
     if (body) {
       body.addEventListener("focusin", function(e) {
         var el = e.target;
-        if (!el || !el.closest) return;
+        if (!el) return;
         setTimeout(function() {
           el.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300); // keyboard open hone ka wait
+        }, 300);
       });
     }
   }, 100);
