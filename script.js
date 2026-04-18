@@ -814,6 +814,21 @@ function showDeliveryForm(prefill) {
 
   document.body.appendChild(modal);
   setTimeout(function() { modal.classList.add("open"); }, 10);
+
+  // Mobile: keyboard pe field hide na ho — focus hone par scroll karo
+  setTimeout(function() {
+    var body = modal.querySelector(".df-body");
+    if (body) {
+      body.addEventListener("focusin", function(e) {
+        var el = e.target;
+        if (!el || !el.closest) return;
+        setTimeout(function() {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300); // keyboard open hone ka wait
+      });
+    }
+  }, 100);
+
   if (!prefill) {
     setTimeout(function() {
       var el = document.getElementById("df_name");
