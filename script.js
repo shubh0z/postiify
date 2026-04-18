@@ -758,7 +758,7 @@ function showDeliveryForm(prefill) {
         '<div class="df-row2">',
           '<div class="df-field">',
             '<label class="df-label" for="df_name">Name</label>',
-            '<input class="df-input" id="df_name" type="text" placeholder="Rahul Sharma" autocomplete="name" value="' + (p.name||'') + '" />',
+            '<input class="df-input" id="df_name" type="text" placeholder="Xxx Yadav" autocomplete="name" value="' + (p.name||'') + '" />',
           '</div>',
           '<div class="df-field">',
             '<label class="df-label" for="df_phone">Phone</label>',
@@ -768,7 +768,7 @@ function showDeliveryForm(prefill) {
 
         '<div class="df-field">',
           '<label class="df-label" for="df_email">Email <span style="font-size:10px;color:var(--text-dim)">(optional)</span></label>',
-          '<input class="df-input" id="df_email" type="email" placeholder="rahul@gmail.com" autocomplete="email" value="' + (p.email||'') + '" />',
+          '<input class="df-input" id="df_email" type="email" placeholder="xxx@gmail.com" autocomplete="email" value="' + (p.email||'') + '" />',
         '</div>',
 
         '<div class="df-field">',
