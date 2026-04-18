@@ -1286,7 +1286,54 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  transition: all 0.3s ease;
 }
+
+/* Filled field — collapse ho jaye */
+.df-field.df-filled {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(78, 240, 255, 0.05);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  gap: 8px;
+  cursor: pointer;
+}
+.df-field.df-filled .df-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.df-field.df-filled .df-input,
+.df-field.df-filled .df-textarea,
+.df-field.df-filled .df-pay-toggle {
+  display: none;
+}
+.df-field.df-filled .df-cod-warn { display: none !important; }
+.df-filled-value {
+  display: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--accent2);
+  flex: 1;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.df-field.df-filled .df-filled-value { display: block; }
+.df-filled-edit {
+  display: none;
+  font-size: 11px;
+  color: var(--accent3);
+  font-family: var(--font-title);
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.df-field.df-filled .df-filled-edit { display: block; }
 
 .df-label {
   font-family: var(--font-title);
