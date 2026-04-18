@@ -1218,6 +1218,9 @@ body::before {
   box-shadow: 6px 6px 0 #000;
   width: calc(100vw - 32px);
   max-width: 440px;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   transform: translateY(24px);
   transition: transform 0.28s cubic-bezier(.22,.68,0,1.2), opacity 0.25s ease;
@@ -1275,6 +1278,8 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 13px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .df-field {
