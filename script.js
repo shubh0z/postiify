@@ -755,38 +755,7 @@ function showDeliveryForm(prefill) {
       // Body
       '<div class="df-body">',
 
-        '<div class="df-row2">',
-          '<div class="df-field">',
-            '<label class="df-label" for="df_name">Name</label>',
-            '<input class="df-input" id="df_name" type="text" placeholder="Xxx Yadav" autocomplete="name" value="' + (p.name||'') + '" />',
-          '</div>',
-          '<div class="df-field">',
-            '<label class="df-label" for="df_phone">Phone</label>',
-            '<input class="df-input" id="df_phone" type="tel" placeholder="9876543210" autocomplete="tel" maxlength="10" value="' + (p.phone||'') + '" />',
-          '</div>',
-        '</div>',
-
-        '<div class="df-field">',
-          '<label class="df-label" for="df_email">Email <span style="font-size:10px;color:var(--text-dim)">(optional)</span></label>',
-          '<input class="df-input" id="df_email" type="email" placeholder="xxx@gmail.com" autocomplete="email" value="' + (p.email||'') + '" />',
-        '</div>',
-
-        '<div class="df-field">',
-          '<label class="df-label" for="df_address">Address</label>',
-          '<textarea class="df-input df-textarea" id="df_address" placeholder="House no., Street, Locality..." rows="2" autocomplete="street-address">' + (p.address||'') + '</textarea>',
-        '</div>',
-
-        '<div class="df-row2">',
-          '<div class="df-field">',
-            '<label class="df-label" for="df_city">City</label>',
-            '<input class="df-input" id="df_city" type="text" placeholder="Delhi" autocomplete="address-level2" value="' + (p.city||'') + '" />',
-          '</div>',
-          '<div class="df-field">',
-            '<label class="df-label" for="df_pin">Pincode</label>',
-            '<input class="df-input" id="df_pin" type="number" placeholder="110001" value="' + (p.pin||'') + '" />',
-          '</div>',
-        '</div>',
-
+        // Payment — TOP pe
         '<div class="df-field">',
           '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">',
             '<label class="df-label">Payment</label>',
@@ -798,6 +767,42 @@ function showDeliveryForm(prefill) {
           '<div class="df-pay-toggle">',
             '<button class="df-pay-btn' + (prefill && p.payMode === 'COD' ? ' df-pay-active' : '') + '" id="df_cod" onclick="dfSelectPay(\'COD\', this)">Cash on delivery</button>',
             '<button class="df-pay-btn' + (!prefill || p.payMode !== 'COD' ? ' df-pay-active' : '') + '" id="df_online" onclick="dfSelectPay(\'Online (UPI/GPay)\', this)">Online / UPI</button>',
+          '</div>',
+        '</div>',
+
+        // Name + Phone
+        '<div class="df-row2">',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_name">Name</label>',
+            '<input class="df-input" id="df_name" type="text" placeholder="Xxx Yadav" autocomplete="name" value="' + (p.name||'') + '" />',
+          '</div>',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_phone">Phone</label>',
+            '<input class="df-input" id="df_phone" type="tel" placeholder="9876543210" autocomplete="tel" maxlength="10" value="' + (p.phone||'') + '" />',
+          '</div>',
+        '</div>',
+
+        // Email
+        '<div class="df-field">',
+          '<label class="df-label" for="df_email">Email <span style="font-size:10px;color:var(--text-dim)">(optional)</span></label>',
+          '<input class="df-input" id="df_email" type="email" placeholder="xxx@gmail.com" autocomplete="email" value="' + (p.email||'') + '" />',
+        '</div>',
+
+        // Address
+        '<div class="df-field">',
+          '<label class="df-label" for="df_address">Address</label>',
+          '<textarea class="df-input df-textarea" id="df_address" placeholder="House no., Street, Locality..." rows="2" autocomplete="street-address">' + (p.address||'') + '</textarea>',
+        '</div>',
+
+        // City + Pincode
+        '<div class="df-row2">',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_city">City</label>',
+            '<input class="df-input" id="df_city" type="text" placeholder="Delhi" autocomplete="address-level2" value="' + (p.city||'') + '" />',
+          '</div>',
+          '<div class="df-field">',
+            '<label class="df-label" for="df_pin">Pincode</label>',
+            '<input class="df-input" id="df_pin" type="number" placeholder="110001" value="' + (p.pin||'') + '" />',
           '</div>',
         '</div>',
 
@@ -838,6 +843,52 @@ function showDeliveryForm(prefill) {
         setTimeout(function() {
           el.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 300);
+      });
+
+      // Blur hone par — filled hai to collapse karo
+      body.addEventListener("focusout", function(e) {
+        var el = e.target;
+        if (!el || (!el.matches(".df-input") && !el.matches(".df-textarea"))) return;
+        var field = el.closest(".df-field");
+        if (!field) return;
+        var val = el.value ? el.value.trim() : "";
+        if (!val) return;
+        if (field.classList.contains("df-filled")) return;
+
+        var label = field.querySelector(".df-label");
+
+        // Filled value span add karo
+        var span = field.querySelector(".df-filled-value");
+        if (!span) {
+          span = document.createElement("span");
+          span.className = "df-filled-value";
+          field.appendChild(span);
+        }
+        span.textContent = val;
+
+        var edit = field.querySelector(".df-filled-edit");
+        if (!edit) {
+          edit = document.createElement("span");
+          edit.className = "df-filled-edit";
+          edit.textContent = "✎ edit";
+          field.appendChild(edit);
+        }
+
+        field.classList.add("df-filled");
+
+        // Field ko body ke neeche move karo
+        body.appendChild(field);
+
+        // Click karne par expand + top pe move karo
+        field.onclick = function() {
+          field.classList.remove("df-filled");
+          // Sabse upar le jao
+          var firstChild = body.firstChild;
+          body.insertBefore(field, firstChild);
+          var input = field.querySelector(".df-input, .df-textarea");
+          if (input) input.focus();
+          field.onclick = null;
+        };
       });
     }
   }, 100);
