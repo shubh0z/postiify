@@ -1287,6 +1287,24 @@ body::before {
   flex-direction: column;
   gap: 5px;
   transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Enter icon — typing ke time dikhta hai */
+.df-enter-icon {
+  display: none;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 18px;
+  color: var(--accent3);
+  pointer-events: none;
+  line-height: 1;
+  background: none;
+  border: none;
+}
+.df-field.df-typing .df-enter-icon {
+  display: block;
 }
 
 /* Filled field — collapse ho jaye */
