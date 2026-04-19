@@ -951,8 +951,18 @@ function submitDeliveryForm() {
 function shakeField(id) {
   var el = document.getElementById(id);
   if (!el) return;
+
+  // Agar field collapsed hai to pehle expand karo
+  var field = el.closest(".df-field");
+  if (field && field.classList.contains("df-filled")) {
+    field.classList.remove("df-filled");
+    var body = field.closest(".df-body");
+    if (body) body.insertBefore(field, body.firstChild);
+    field.onclick = null;
+  }
+
   el.classList.add("df-shake");
-  el.focus();
+  setTimeout(function() { el.focus(); }, 50);
   setTimeout(function() { el.classList.remove("df-shake"); }, 500);
 }
 
