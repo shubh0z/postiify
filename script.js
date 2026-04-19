@@ -824,18 +824,43 @@ function showDeliveryForm(prefill) {
   setTimeout(function() {
     var body = modal.querySelector(".df-body");
     if (body) {
-      body.addEventListener("focusin", function(e) {
-        var el = e.target;
-        if (!el) return;
-        setTimeout(function() {
-          el.scrollIntoView({ behavior: "smooth", block: "center" });
-        }, 300);
+
+      // Har df-field mai enter icon add karo
+      body.querySelectorAll(".df-field").forEach(function(field) {
+        var icon = document.createElement("span");
+        icon.className = "df-enter-icon";
+        icon.textContent = "↵";
+        icon.style.pointerEvents = "auto";
+        icon.style.cursor = "pointer";
+        icon.addEventListener("mousedown", function(e) {
+          e.preventDefault(); // focusout trigger karo without blur issues
+          var input = field.querySelector(".df-input, .df-textarea");
+          if (input) input.blur();
+        });
+        field.appendChild(icon);
       });
 
-      // Blur hone par — filled hai to collapse karo
-      body.addEventListener("focusout", function(e) {
+      // Typing hone par icon show/hide karo
+      body.addEventListener("input", function(e) {
         var el = e.target;
         if (!el || (!el.matches(".df-input") && !el.matches(".df-textarea"))) return;
+        var field = el.closest(".df-field");
+        if (!field) return;
+        if (el.value.trim()) {
+          field.classList.add("df-typing");
+        } else {
+          field.classList.remove("df-typing");
+        }
+      });
+
+      // Focus hatne par icon hide karo
+      body.addEventListener("focusout", function(e) {
+        var el = e.target;
+        if (!el) return;
+        var field = el.closest(".df-field");
+        if (field) field.classList.remove("df-typing");
+
+        if (!el.matches(".df-input") && !el.matches(".df-textarea")) return;
         var field = el.closest(".df-field");
         if (!field) return;
         var val = el.value ? el.value.trim() : "";
