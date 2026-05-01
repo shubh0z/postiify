@@ -120,7 +120,7 @@ const PRODUCTS_FIGURES = [
     type: "figure",
     inStock: true,
     emoji: "🧸",
-    imgs: ['anime_figures/Tanjiro kamado 15cm  (1photo).jpg', 'anime_figures/Tanjiro kamado 15cm  (2photo).jpg'],
+    imgs: ['anime_figures/Tanjiro kamado 15cm  (1photo).jpg'],
   },
   {
     id: 1514,
