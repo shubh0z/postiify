@@ -48,7 +48,7 @@ const PRODUCTS_KEYCHAINS = [
     price: 119,
     type: "keychain",
     subtype: "minecraft",
-    inStock: true,
+    inStock: false,
     emoji: "👾",
     imgs: ["keychain/Axolotl.jpg"],
 
