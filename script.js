@@ -12,14 +12,14 @@ const OFFERS = [
     type: "poster",
     icon: "💸",
     text: "Price Drop!",
-    sub: "Grab them before it's gone! 🔥",
+    sub: "All posters now at ₹44 — grab them before it's gone! 🔥",
     active: true,
   },
   {
     type: "frame",  
     icon: "💸",
     text: "Buy 3 Frames → Get ₹49 OFF!",
-    sub: "= free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
+    sub: "3 frames = free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
     active: true,
   },
   {
@@ -33,7 +33,7 @@ const OFFERS = [
     type: "figure",
     icon: "🚚",
     text: "Order ₹498 or above → FREE Delivery! 🚚",
-    sub: "",
+    sub: "Free delivery on figures orders above ₹498!",
     active: true,
   },
   {
@@ -285,12 +285,35 @@ function openLightbox(productId) {
   renderLbDots();
 
   var lbAddBtn = lb.querySelector(".lb-add-btn");
+  var lbInfo = document.querySelector("#lightbox .lb-info");
   if (!product.inStock) {
     lbAddBtn.disabled = true;
     lbAddBtn.textContent = "SOLD OUT";
+    lbAddBtn.style.position = "relative";
+    lbAddBtn.style.bottom = "";
+    lbAddBtn.style.left = "0";
+    lbAddBtn.style.right = "0";
+    lbAddBtn.style.transform = "none";
+    lbAddBtn.style.maxWidth = "100%";
+    lbAddBtn.style.width = "100%";
+    lbAddBtn.style.textAlign = "center";
+    lbAddBtn.style.background = "#333";
+    lbAddBtn.style.color = "#888";
+    if (lbInfo) lbInfo.style.display = "none";
   } else {
     lbAddBtn.disabled = false;
     lbAddBtn.textContent = "+ ADD TO CART";
+    lbAddBtn.style.position = "relative";
+    lbAddBtn.style.bottom = "";
+    lbAddBtn.style.left = "0";
+    lbAddBtn.style.right = "0";
+    lbAddBtn.style.transform = "none";
+    lbAddBtn.style.maxWidth = "100%";
+    lbAddBtn.style.width = "100%";
+    lbAddBtn.style.textAlign = "center";
+    lbAddBtn.style.background = "";
+    lbAddBtn.style.color = "";
+    if (lbInfo) lbInfo.style.display = "none";
   }
 
   lb.classList.add("open");
@@ -1198,3 +1221,29 @@ function autoShuffleAll() {
 function handleLbOverlayClick(e) {
   if (e.target === document.getElementById("lightbox")) closeLightbox();
 }
+
+// ── FILTER BAR SCROLL HINT (mobile only) ──
+(function() {
+  if (window.innerWidth > 600) return;
+  var bar = document.querySelector(".filter-bar");
+  if (!bar) return;
+
+  function playHint() {
+    bar.classList.remove("hint-anim");
+    void bar.offsetWidth; // reflow to restart animation
+    bar.classList.add("hint-anim");
+  }
+
+  // On load: play 2 times
+  var count = 0;
+  bar.addEventListener("animationend", function onEnd() {
+    count++;
+    if (count < 2) {
+      playHint();
+    } else {
+      bar.removeEventListener("animationend", onEnd);
+    }
+  });
+
+  setTimeout(playHint, 600); // small delay after load
+})();
