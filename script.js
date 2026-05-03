@@ -12,14 +12,14 @@ const OFFERS = [
     type: "poster",
     icon: "💸",
     text: "Price Drop!",
-    sub: "All posters now at ₹44 — grab them before it's gone! 🔥",
+    sub: "Grab them before it's gone! 🔥",
     active: true,
   },
   {
     type: "frame",  
     icon: "💸",
     text: "Buy 3 Frames → Get ₹49 OFF!",
-    sub: "3 frames = free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
+    sub: "= free delivery🖼️", // \n1-2 frames = delivery charge applicable (DM for details)",
     active: true,
   },
   {
@@ -32,7 +32,7 @@ const OFFERS = [
   {
     type: "figure",
     icon: "🚚",
-    text: "Order 2 Figures → FREE Delivery!",
+    text: "Order ₹498 or above → FREE Delivery! 🚚",
     sub: "",
     active: true,
   },
@@ -166,7 +166,7 @@ function renderProducts(filter, search, page) {
             ? '<img class="product-img" src="' + firstImg + '" alt="' + p.name + '" loading="lazy" draggable="false" />'
             : '<div class="product-img-placeholder">' + p.emoji + '</div>'
           ) +
-          '<span class="badge-type">' + badgeLabel(p.type) + '</span>' +
+          (p.label ? '<span class="badge-custom">' + p.label + '</span>' : "") +
           (!p.inStock ? '<div class="badge-sold">SOLD OUT</div>' : "") +
           multiHint +
         '</div>' +
@@ -633,12 +633,23 @@ function calcAppliedOffers() {
     }
 
     if (offer.type === "figure") {
-      if (qtyOfType >= 2) {
+      var figureSubtotal = cart
+        .filter(function(i) { return i.type === "figure"; })
+        .reduce(function(s, i) { return s + i.price * i.qty; }, 0);
+      if (figureSubtotal >= 498) {
         applied.push({
           icon: "🚚",
-          label: "2+ Figures → Free Delivery!",
+          label: "Order ₹498+ → Free Delivery!",
           discount: 0,
           note: "FREE DELIVERY"
+        });
+      } else if (figureSubtotal > 0) {
+        var remaining = 498 - figureSubtotal;
+        applied.push({
+          icon: "🚚",
+          label: "Add ₹" + remaining + " more for Free Delivery!",
+          discount: 0,
+          note: "₹" + remaining + " LEFT"
         });
       }
     }
@@ -690,9 +701,11 @@ function updateCartUI() {
     // Each offer row
     appliedOffers.forEach(function(o) {
       container.innerHTML +=
-        '<div class="cart-offer-row">' +
-          '<span>' + o.icon + ' ' + o.label + '</span>' +
-          '<span>' + (o.discount > 0 ? '−₹' + o.discount : '<span class="offer-free-tag" style="' + (o.note === 'DELIVERY CHARGE' ? 'background:#ffaa00;' : '') + '">' + o.note + '</span>') + '</span>' +
+        '<div style="text-align:center;margin-top:6px">' +
+          '<div class="cart-offer-row">' +
+            o.icon + ' ' + o.label +
+            (o.discount > 0 ? ' <strong>−₹' + o.discount + '</strong>' : '') +
+          '</div>' +
         '</div>';
     });
   }
